@@ -27,8 +27,9 @@ DEBUG = True
 ALLOWED_HOSTS = [
     "172.17.85.218",
     "127.0.0.1",
-    "172.17.85.189",
-    "172.17.85.222"
+    "172.17.85.189",#milenko
+    "172.17.85.222",#Andres
+    "172.17.85.211", #Kyra
 ]
 
 # Application definition
