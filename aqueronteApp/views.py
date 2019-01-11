@@ -5,8 +5,10 @@ from rest_framework.response import Response
 import requests
 
 from aqueronteApp.configuracion import *
-from aqueronteApp.models import Ticket, Usuario
+from aqueronteApp.models import Tickets, Usuarios
 from aqueronteApp.credentials import *
+
+
 
 
 # CONSULTA_CAS:
@@ -18,6 +20,18 @@ def consulta_cas(ticket):
     extraccion = requests.get(url=url_cas, params=params, verify=False)
     data = extraccion.json()
     return data
+
+# Refrescar_token:
+#Busca un token expirado en la base de datos y si esta expirado lo cambia por un token nuevo y lo retorna
+@api_view(['GET', 'POST'])
+def refrescar_token(request):
+    if request.method=='POST':
+        token_actual= request.data.get('token')
+        r_token_actual= request.data.get('refresh_token')
+    return
+
+
+
 
 
 @api_view(['GET', 'POST'])
@@ -35,10 +49,10 @@ def validar_ticket(request):
             # Si el ticket es valido lo guarda los datos del usuario en la BDD y retorna los datos junto a un codigo
             # HTTP 200
             if data['valid']:
-                user = Usuario(rut=data["info"]['rut'], nombres=data['info']['nombres'],
-                               apellidos=data['info']['apellidos'])
+                user = Usuarios(rut=data["info"]['rut'], nombres=data['info']['nombres'],
+                                apellidos=data['info']['apellidos'])
                 user.save()
-                ticket = Ticket(ticket=data['ticket'], valid=data['valid'], usuario=user)
+                ticket = Tickets(ticket=data['ticket'], valid=data['valid'], usuario=user)
                 ticket.save()
                 return Response(data, status=200)
 

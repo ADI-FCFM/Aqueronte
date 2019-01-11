@@ -105,4 +105,5 @@ venv.bak/
 
 # Others
 aqueronteApp/credentials.py
+aqueronteApp/configuracion.py
 .idea

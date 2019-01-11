@@ -6,12 +6,12 @@
 
 from rest_framework import serializers
 
-from aqueronteApp.models import Ticket, Usuario
+from aqueronteApp.models import Tickets, Usuarios
 
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Usuario
+        model = Usuarios
         fields = ('rut', 'nombres', 'apellidos')
 
 
@@ -19,7 +19,7 @@ class TicketSerializer(serializers.ModelSerializer):
     usuario = UserSerializer(required=True)
 
     class Meta:
-        model = Ticket
+        model = Tickets
         fields = ('ticket', 'valid', 'usuario')
         # depth = 4
 
@@ -33,6 +33,6 @@ class TicketSerializer(serializers.ModelSerializer):
         user_data = validated_data.pop('info')
         print("user_data", user_data)
         usuario = UserSerializer.create(UserSerializer(), validated_data=user_data)
-        ticket = Ticket.objects.update_or_create(ticket=validated_data.pop('ticket'), valid=validated_data.pop('valid'),
-                                                 usuario=usuario)
+        ticket = Tickets.objects.update_or_create(ticket=validated_data.pop('ticket'), valid=validated_data.pop('valid'),
+                                                  usuario=usuario)
         return ticket
