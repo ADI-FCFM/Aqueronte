@@ -25,7 +25,7 @@ def validar_ticket(request):
 
         # Si el ticket es valido lo guarda los datos del usuario en la BDD y retorna los datos junto a un codigo
         # HTTP 200
-        if data['valid']:
+        if data['valid']: #
             user = Usuario(rut=data["info"]['rut'], nombres=data['info']['nombres'],
                            apellidos=data['info']['apellidos'])
             user.save()
