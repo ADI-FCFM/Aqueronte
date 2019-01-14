@@ -106,14 +106,15 @@ def validar_ticket(request):
 def puertas(request):
     if request.method == 'POST':
         # Recibir el ticket desde la vista
-        ticket = request.data.get('ticket')
-        if ticket is not None:
-            # Revalidar el ticket con el CAS
-            data = consulta_cas(ticket)
-            # Verificar que el ticket este valido
-            if data['valid']:
+        token = request.data.get('token')
+        if token is not None:
+            # Verificar que el token este activo
+            token_bd = Tokens.objects.get(token=token)
+            estado_token = token_bd.estado
+            if estado_token:
                 # Solicitar al servidor las puertas del usuario y retornarlas junto a un codigo HTTP 200
-                params = {"pers_id": data['info']['rut']}
+                pers_id = Usuarios.objects.get(id_sesion=token_bd).pers_id
+                params = {"pers_id": pers_id}
                 extraccion = requests.get(url=url_puertas, params=params,
                                           auth=(usuario_servidor, password_servidor),
                                           verify=False)
@@ -121,7 +122,7 @@ def puertas(request):
                 return Response(puertas_listado, status=200)
             # Si el ticket es invalido retornar HTTP 401 unauthorized
             else:
-                return Response("Ticket invalido", status=401)
+                return Response("Token invalido", status=403)
         # Si no llega la data pedida error 400 bad request
         else:
             return Response("Error en la data", status=400)
