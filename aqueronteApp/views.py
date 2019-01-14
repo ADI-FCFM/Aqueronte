@@ -1,10 +1,9 @@
 # from django.shortcuts import render
-from datetime import *
 import datetime as dt
+from datetime import *
 from random import randint
-
+from django.utils import timezone
 from rest_framework.decorators import api_view
-# Create your views here.
 from rest_framework.response import Response
 import requests
 import hashlib
@@ -12,6 +11,8 @@ from aqueronteApp.configuracion import *
 from aqueronteApp.models import Tickets, Usuarios, Tokens
 from aqueronteApp.credentials import *
 
+
+# Create your views here.
 
 # CONSULTA_CAS:
 # Funcion auxiliar para realizar la validacion del ticket en el CAS, evita la reutilizacion de codigo ya que el
@@ -40,18 +41,18 @@ def refrescar_token(request):
                 usuario_original = Usuarios.objects.get(id_sesion=token_actual_bdd)
                 old_ticket = Tickets.objects.get(usuario=usuario_original)
                 nuevo_token = hashlib.sha256(
-                    (old_ticket + str(datetime.timestamp(datetime.now())) + str(randint(0, 1000000))).encode(
+                    (old_ticket + str(datetime.timestamp(timezone.now())) + str(randint(0, 1000000))).encode(
                         'utf-8')).hexdigest()
                 print(nuevo_token)
                 nuevo_refresh_token = hashlib.sha256(
-                    (old_ticket + str(datetime.timestamp(datetime.now())) + str(randint(0, 1000000))).encode(
+                    (old_ticket + str(datetime.timestamp(timezone.now())) + str(randint(0, 1000000))).encode(
                         'utf-8')).hexdigest()
 
                 # Deshabilitar el token actual
                 token_actual_bdd.estado = False
                 token_actual_bdd.fecha_m = datetime.now(tz=None)
                 token_actual_bdd.save()
-                fecha = datetime.now()
+                fecha = timezone.now()
                 fecha_exp = (datetime.now(tz=None) + dt.timedelta(minutes=5))
                 # Crear una nueva fila en la lista de tokens
                 token_actualizado = Tokens(token=nuevo_token, refresh_token=nuevo_refresh_token,
@@ -90,24 +91,29 @@ def validar_ticket(request):
             # HTTP 200
             if data['valid']:
                 token_hash = hashlib.sha256(
-                    (view_ticket + str(datetime.timestamp(datetime.now())) + str(randint(0, 1000000))).encode(
+                    (view_ticket + str(datetime.timestamp(timezone.now())) + str(randint(0, 1000000))).encode(
                         'utf-8'))
                 token = token_hash.hexdigest()
 
                 refresh_token_hash = hashlib.sha256(
-                    (view_ticket + str(datetime.timestamp(datetime.now())) + str(randint(0, 1000000))).encode(
+                    (view_ticket + str(datetime.timestamp(timezone.now())) + str(randint(0, 1000000))).encode(
                         'utf-8'))
                 refresh_token = refresh_token_hash.hexdigest()
+                fecha = timezone.now()
+                fecha_exp = (datetime.now(tz=None) + dt.timedelta(minutes=5))
                 bd_token = Tokens(token=token, refresh_token=refresh_token,
-                                  fecha_exp=(datetime.now(tz=None) + dt.timedelta(minutes=5)),
-                                  estado=True, fecha_c=datetime.now(), fecha_m=datetime.now())
+                                  fecha_exp=fecha_exp,
+                                  estado=True, fecha_c=fecha, fecha_m=fecha)
                 bd_token.save()
+
                 user = Usuarios(pers_id=data["info"]['rut'], nombres=data['info']['nombres'],
-                                apellidos=data['info']['apellidos'], id_sesion=bd_token, fecha_c=datetime.now())
+                                apellidos=data['info']['apellidos'], id_sesion=bd_token, fecha_c=fecha)
                 user.save()
-                ticket = Tickets(ticket_cas=data['ticket'], usuario=user, fecha=datetime.now())
+                ticket = Tickets(ticket_cas=data['ticket'], usuario=user, fecha=fecha)
                 ticket.save()
-                response_data = {"token_data": {"token": token, "refresh_token": refresh_token}, "user_data": data}
+                response_data = {
+                    "token_data": {"token": token, "refresh_token": refresh_token, "fecha_exp": str(fecha_exp)},
+                    "user_data": data}
                 print(response_data)
                 return Response(response_data, status=200)
 
@@ -132,9 +138,8 @@ def puertas(request):
         token = request.data.get('token')
         if token is not None:
             # Verificar que el token este activo
-            token_bd = Tokens.objects.get(token=token)
-            estado_token = token_bd.estado
-            if estado_token:
+            token_bd = Tokens.objects.get(token=token, estado=True)
+            if token_bd.fecha_exp > timezone.now():
                 # Solicitar al servidor las puertas del usuario y retornarlas junto a un codigo HTTP 200
                 pers_id = Usuarios.objects.get(id_sesion=token_bd).pers_id
                 params = {"pers_id": pers_id}
