@@ -1,11 +1,13 @@
 # from django.shortcuts import render
 from datetime import *
 import datetime as dt
+from random import randint
+
 from rest_framework.decorators import api_view
 # Create your views here.
 from rest_framework.response import Response
 import requests
-
+import hashlib
 from aqueronteApp.configuracion import *
 from aqueronteApp.models import Tickets, Usuarios, Tokens
 from aqueronteApp.credentials import *
@@ -35,24 +37,34 @@ def refrescar_token(request):
             r_token_bdd = token_actual.bdd.get('refresh_token')
             if token_bdd == token_actual and r_token_bdd == r_token_actual:
                 # Generar nuevo token y refresh token
-                nuevo_token = "hola soy un token supersecreto"
-                nuevo_refresh_token = "hola soy un nuevo refresh token"
+                usuario_original = Usuarios.objects.get(id_sesion=token_actual_bdd)
+                old_ticket = Tickets.objects.get(usuario=usuario_original)
+                nuevo_token = hashlib.sha256(
+                    (old_ticket + str(datetime.timestamp(datetime.now())) + str(randint(0, 1000000))).encode(
+                        'utf-8')).hexdigest()
+                print(nuevo_token)
+                nuevo_refresh_token = hashlib.sha256(
+                    (old_ticket + str(datetime.timestamp(datetime.now())) + str(randint(0, 1000000))).encode(
+                        'utf-8')).hexdigest()
 
                 # Deshabilitar el token actual
                 token_actual_bdd.estado = False
                 token_actual_bdd.fecha_m = datetime.now(tz=None)
                 token_actual_bdd.save()
+                fecha = datetime.now()
+                fecha_exp = (datetime.now(tz=None) + dt.timedelta(minutes=5))
                 # Crear una nueva fila en la lista de tokens
                 token_actualizado = Tokens(token=nuevo_token, refresh_token=nuevo_refresh_token,
-                                           fecha_exp=(datetime.now(tz=None) + dt.timedelta(minutes=5)),
-                                           estado=True, fecha_c=datetime.now(), fecha_m=datetime.now())
+                                           fecha_exp=fecha_exp,
+                                           estado=True, fecha_c=fecha, fecha_m=fecha)
                 token_actualizado.save()
                 # Actualizar token asociado al usuario guardandolo en una nueva fila
-                usuario = Usuarios.objects.get(id_sesion=token_bdd).copy.deepcopy()
+                usuario = usuario_original
                 usuario.id_sesion = token_actualizado
                 usuario.save()
+
                 # Responder con la informacion actualizada
-                data = {"token": nuevo_token, "refresh_token": nuevo_refresh_token}
+                data = {"token": nuevo_token, "refresh_token": nuevo_refresh_token, "fecha_exp": fecha_exp}
                 return Response(data, status=200)
             else:
                 return Response('Credenciales incorrectas', status=403)
@@ -77,16 +89,27 @@ def validar_ticket(request):
             # Si el ticket es valido lo guarda los datos del usuario en la BDD y retorna los datos junto a un codigo
             # HTTP 200
             if data['valid']:
-                token = Tokens(token="holasoyuntoken", refresh_token="holasoyunrefreshtoken",
-                               fecha_exp=(datetime.now(tz=None) + dt.timedelta(minutes=5)),
-                               estado=True, fecha_c=datetime.now(), fecha_m=datetime.now())
-                token.save()
+                token_hash = hashlib.sha256(
+                    (view_ticket + str(datetime.timestamp(datetime.now())) + str(randint(0, 1000000))).encode(
+                        'utf-8'))
+                token = token_hash.hexdigest()
+
+                refresh_token_hash = hashlib.sha256(
+                    (view_ticket + str(datetime.timestamp(datetime.now())) + str(randint(0, 1000000))).encode(
+                        'utf-8'))
+                refresh_token = refresh_token_hash.hexdigest()
+                bd_token = Tokens(token=token, refresh_token=refresh_token,
+                                  fecha_exp=(datetime.now(tz=None) + dt.timedelta(minutes=5)),
+                                  estado=True, fecha_c=datetime.now(), fecha_m=datetime.now())
+                bd_token.save()
                 user = Usuarios(pers_id=data["info"]['rut'], nombres=data['info']['nombres'],
-                                apellidos=data['info']['apellidos'], id_sesion=token, fecha_c=datetime.now())
+                                apellidos=data['info']['apellidos'], id_sesion=bd_token, fecha_c=datetime.now())
                 user.save()
                 ticket = Tickets(ticket_cas=data['ticket'], usuario=user, fecha=datetime.now())
                 ticket.save()
-                return Response(data, status=200)
+                response_data = {"token_data": {"token": token, "refresh_token": refresh_token}, "user_data": data}
+                print(response_data)
+                return Response(response_data, status=200)
 
             # Si el ticket no es valido retorna HTTP 401 unathorized
             else:
