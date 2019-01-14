@@ -1,6 +1,6 @@
 # from django.shortcuts import render
 from datetime import *
-import datetime
+import datetime as dt
 from rest_framework.decorators import api_view
 # Create your views here.
 from rest_framework.response import Response
@@ -44,14 +44,13 @@ def refrescar_token(request):
                 token_actual_bdd.save()
                 # Crear una nueva fila en la lista de tokens
                 token_actualizado = Tokens(token=nuevo_token, refresh_token=nuevo_refresh_token,
-                                           fecha_exp=(datetime.now(tz=None) + datetime.timedelta(minutes=5)),
+                                           fecha_exp=(datetime.now(tz=None) + dt.timedelta(minutes=5)),
                                            estado=True, fecha_c=datetime.now(), fecha_m=datetime.now())
                 token_actualizado.save()
                 # Actualizar token asociado al usuario guardandolo en una nueva fila
                 usuario = Usuarios.objects.get(id_sesion=token_bdd).copy.deepcopy()
                 usuario.id_sesion = token_actualizado
                 usuario.save()
-
                 # Responder con la informacion actualizada
                 data = {"token": nuevo_token, "refresh_token": nuevo_refresh_token}
                 return Response(data, status=200)
@@ -78,10 +77,14 @@ def validar_ticket(request):
             # Si el ticket es valido lo guarda los datos del usuario en la BDD y retorna los datos junto a un codigo
             # HTTP 200
             if data['valid']:
-                user = Usuarios(rut=data["info"]['rut'], nombres=data['info']['nombres'],
-                                apellidos=data['info']['apellidos'])
+                token = Tokens(token="holasoyuntoken", refresh_token="holasoyunrefreshtoken",
+                               fecha_exp=(datetime.now(tz=None) + dt.timedelta(minutes=5)),
+                               estado=True, fecha_c=datetime.now(), fecha_m=datetime.now())
+                token.save()
+                user = Usuarios(pers_id=data["info"]['rut'], nombres=data['info']['nombres'],
+                                apellidos=data['info']['apellidos'], id_sesion=token, fecha_c=datetime.now())
                 user.save()
-                ticket = Tickets(ticket=data['ticket'], valid=data['valid'], usuario=user)
+                ticket = Tickets(ticket_cas=data['ticket'], usuario=user, fecha=datetime.now())
                 ticket.save()
                 return Response(data, status=200)
 
