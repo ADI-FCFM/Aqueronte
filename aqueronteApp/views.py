@@ -138,14 +138,14 @@ def abrir_puerta(request):
     if request.method == 'POST':
         # Recibir informacion
         id_puerta = request.data.get('id')
-        ticket = request.data.get('ticket')
-        if ticket is not None and id_puerta is not None:
-            # Revalidar el ticket con el CAS
-            data = consulta_cas(ticket)
-            # Verificar que el ticket este valido
-            if data['valid']:
+        token = request.data.get('token')
+        if token is not None and id_puerta is not None:
+            # Verificar que el token este activo
+            token_bd = Tokens.objects.get(token=token)
+            estado_token = token_bd.estado
+            if estado_token:
                 # Solicita al servidor abrir la puerta pedida por la vista
-                id_usuario = data['info']['rut']
+                id_usuario = Usuarios.objects.get(id_sesion=token_bd).pers_id
                 params = {'id': id_puerta, 'pers_id': id_usuario}
                 peticion_apertura = requests.get(url=url_abrir, params=params,
                                                  auth=(usuario_servidor, password_servidor),
