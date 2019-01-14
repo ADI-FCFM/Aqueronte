@@ -1,14 +1,14 @@
 # from django.shortcuts import render
+from datetime import *
+import datetime
 from rest_framework.decorators import api_view
 # Create your views here.
 from rest_framework.response import Response
 import requests
 
 from aqueronteApp.configuracion import *
-from aqueronteApp.models import Tickets, Usuarios
+from aqueronteApp.models import Tickets, Usuarios, Tokens
 from aqueronteApp.credentials import *
-
-
 
 
 # CONSULTA_CAS:
@@ -21,17 +21,46 @@ def consulta_cas(ticket):
     data = extraccion.json()
     return data
 
+
 # Refrescar_token:
-#Busca un token expirado en la base de datos y si esta expirado lo cambia por un token nuevo y lo retorna
+# Busca un token expirado en la base de datos y si esta expirado lo cambia por un token nuevo y lo retorna
 @api_view(['GET', 'POST'])
 def refrescar_token(request):
-    if request.method=='POST':
-        token_actual= request.data.get('token')
-        r_token_actual= request.data.get('refresh_token')
-    return
+    if request.method == 'POST':
+        token_actual = request.data.get('token')
+        r_token_actual = request.data.get('refresh_token')
+        if token_actual is not None and r_token_actual is not None:
+            token_actual_bdd = Tokens.objects.filter(token=token_actual, status=True)
+            token_bdd = token_actual_bdd.get('token')
+            r_token_bdd = token_actual.bdd.get('refresh_token')
+            if token_bdd == token_actual and r_token_bdd == r_token_actual:
+                # Generar nuevo token y refresh token
+                nuevo_token = "hola soy un token supersecreto"
+                nuevo_refresh_token = "hola soy un nuevo refresh token"
 
+                # Deshabilitar el token actual
+                token_actual_bdd.estado = False
+                token_actual_bdd.fecha_m = datetime.now(tz=None)
+                token_actual_bdd.save()
+                # Crear una nueva fila en la lista de tokens
+                token_actualizado = Tokens(token=nuevo_token, refresh_token=nuevo_refresh_token,
+                                           fecha_exp=(datetime.now(tz=None) + datetime.timedelta(minutes=5)),
+                                           estado=True, fecha_c=datetime.now(), fecha_m=datetime.now())
+                token_actualizado.save()
+                # Actualizar token asociado al usuario guardandolo en una nueva fila
+                usuario = Usuarios.objects.get(id_sesion=token_bdd).copy.deepcopy()
+                usuario.id_sesion = token_actualizado
+                usuario.save()
 
-
+                # Responder con la informacion actualizada
+                data = {"token": nuevo_token, "refresh_token": nuevo_refresh_token}
+                return Response(data, status=200)
+            else:
+                return Response('Credenciales incorrectas', status=403)
+        else:
+            return Response('Data erronea', status=400)
+    else:
+        return Response("Esperando", status=200)
 
 
 @api_view(['GET', 'POST'])
