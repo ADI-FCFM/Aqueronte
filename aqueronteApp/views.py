@@ -1,4 +1,5 @@
 # from django.shortcuts import render
+import copy
 import datetime as dt
 from datetime import *
 from random import randint
@@ -30,19 +31,22 @@ def consulta_cas(ticket):
 @api_view(['GET', 'POST'])
 def refrescar_token(request):
     if request.method == 'POST':
-        #Recibir informacion
+        # Recibir informacion
         token_actual = request.data.get('token')
         r_token_actual = request.data.get('refresh_token')
-        #Si la informacion existe
+        # Si la informacion existe
         if token_actual is not None and r_token_actual is not None:
-            #Buscar el Token actual
-            token_actual_bdd = Tokens.objects.filter(token=token_actual, estado=True)[0]
-            if token_actual_bdd:
+            # Buscar el Token actual
+            token_actual_bdd = Tokens.objects.filter(token=token_actual, estado=True)
+            if token_actual_bdd.exists():
+                # Extraer el token actual
+                token_actual_bdd = Tokens.objects.get(token=token_actual)
                 print(token_actual_bdd)
                 token_bdd = token_actual_bdd.token
                 r_token_bdd = token_actual_bdd.refresh_token
                 if token_bdd == token_actual and r_token_bdd == r_token_actual:
                     # Generar nuevo token y refresh token
+                    print(token_actual_bdd)
                     usuario_original = Usuarios.objects.get(id_sesion=token_actual_bdd)
                     old_ticket = Tickets.objects.get(usuario=usuario_original).ticket_cas
                     nuevo_token = hashlib.sha256(
@@ -65,7 +69,7 @@ def refrescar_token(request):
                                                estado=True, fecha_c=fecha, fecha_m=fecha)
                     token_actualizado.save()
                     # Actualizar token asociado al usuario guardandolo en una nueva fila
-                    usuario = usuario_original
+                    usuario = copy.deepcopy(usuario_original)
                     usuario.id_sesion = token_actualizado
                     usuario.save()
 
@@ -73,9 +77,9 @@ def refrescar_token(request):
                     data = {"token": nuevo_token, "refresh_token": nuevo_refresh_token, "fecha_exp": fecha_exp}
                     return Response(data, status=200)
                 else:
-                    return Response('Credenciales incorrectas', status=403)
+                    return Response('Credenciales incorrectas', status=401)
             else:
-                return Response("Token incorrescto", status=400)
+                return Response("Token inválido", status=401)
         else:
             return Response('Data erronea', status=400)
     else:
@@ -144,9 +148,9 @@ def puertas(request):
         # Recibir el ticket desde la vista
         token = request.query_params.get('token')
         if token is not None:
-            # Verificar que el token este activo
-            token_bd = Tokens.objects.filter(token=token, estado=True)[0]
-            if token_bd:
+            token_bd = Tokens.objects.filter(token=token, estado=True)
+            if token_bd.exists():
+                token_bd = Tokens.objects.get(token=token, estado=True)
                 if token_bd.fecha_exp > timezone.now():
                     # Solicitar al servidor las puertas del usuario y retornarlas junto a un codigo HTTP 200
                     pers_id = Usuarios.objects.get(id_sesion=token_bd).pers_id
@@ -160,7 +164,7 @@ def puertas(request):
                 else:
                     return Response("Token invalido", status=403)
             else:
-                return Response("Token invalido", status=403)
+                return Response("Token invalido", status=401)
         # Si no llega la data pedida error 400 bad request
         else:
             return Response("Error en la data", status=400)
@@ -179,26 +183,31 @@ def abrir_puerta(request):
         token = request.data.get('token')
         if token is not None and id_puerta is not None:
             # Verificar que el token este activo
-            token_bd = Tokens.objects.get(token=token, estado=True)
-            if token_bd.fecha_exp > timezone.now():
-                # Solicita al servidor abrir la puerta pedida por la vista
-                id_usuario = Usuarios.objects.get(id_sesion=token_bd).pers_id
-                params = {'id': id_puerta, 'pers_id': id_usuario}
-                peticion_apertura = requests.get(url=url_abrir, params=params,
-                                                 auth=(usuario_servidor, password_servidor),
-                                                 verify=False)
-                respuesta_servidor = peticion_apertura.json()
+            token_bd = Tokens.objects.filter(token=token, estado=True)
+            if token_bd.exist():
+                #extraer el token
+                token_bd = Tokens.objects.get(token=token, estado=True)
+                if token_bd.fecha_exp > timezone.now():
+                    # Solicita al servidor abrir la puerta pedida por la vista
+                    id_usuario = Usuarios.objects.get(id_sesion=token_bd).pers_id
+                    params = {'id': id_puerta, 'pers_id': id_usuario}
+                    peticion_apertura = requests.get(url=url_abrir, params=params,
+                                                     auth=(usuario_servidor, password_servidor),
+                                                     verify=False)
+                    respuesta_servidor = peticion_apertura.json()
 
-                # Si la puerta se abrio retorna HTTP 200
-                if respuesta_servidor['estado']:
-                    return Response("Acceso concedido", status=200)
+                    # Si la puerta se abrio retorna HTTP 200
+                    if respuesta_servidor['estado']:
+                        return Response("Acceso concedido", status=200)
 
-                # Si la puerta no se abrio, HTTP 401 unauthorized
+                    # Si la puerta no se abrio, HTTP 401 unauthorized
+                    else:
+                        return Response("Acceso denegado", status=401)
+                # Si el ticket no es valido HTTP 401 unauthorized
                 else:
-                    return Response("Acceso denegado", status=401)
-            # Si el ticket no es valido HTTP 401 unauthorized
+                    return Response("Token invalido", status=403)
             else:
-                return Response("Ticket invalido", status=401)
+                return Response("Token invalido", status=401)
         else:
             return Response("Error en la data", status=400)
     else:
