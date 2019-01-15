@@ -145,20 +145,20 @@ def puertas(request):
         token = request.query_params.get('token')
         if token is not None:
             # Verificar que el token este activo
-            token_bd = Tokens.objects.get(token=token, estado=True)
-            print(token_bd.fecha_exp > timezone.now())
-            print(token_bd.fecha_exp)
-            print(timezone.now())
-            if token_bd.fecha_exp > timezone.now():
-                # Solicitar al servidor las puertas del usuario y retornarlas junto a un codigo HTTP 200
-                pers_id = Usuarios.objects.get(id_sesion=token_bd).pers_id
-                params = {"pers_id": pers_id}
-                extraccion = requests.get(url=url_puertas, params=params,
-                                          auth=(usuario_servidor, password_servidor),
-                                          verify=False)
-                puertas_listado = extraccion.json()
-                return Response(puertas_listado, status=200)
-            # Si el ticket es invalido retornar HTTP 403 unauthorized
+            token_bd = Tokens.objects.filter(token=token, estado=True)[0]
+            if token_bd:
+                if token_bd.fecha_exp > timezone.now():
+                    # Solicitar al servidor las puertas del usuario y retornarlas junto a un codigo HTTP 200
+                    pers_id = Usuarios.objects.get(id_sesion=token_bd).pers_id
+                    params = {"pers_id": pers_id}
+                    extraccion = requests.get(url=url_puertas, params=params,
+                                              auth=(usuario_servidor, password_servidor),
+                                              verify=False)
+                    puertas_listado = extraccion.json()
+                    return Response(puertas_listado, status=200)
+                # Si el ticket es invalido retornar HTTP 403 unauthorized
+                else:
+                    return Response("Token invalido", status=403)
             else:
                 return Response("Token invalido", status=403)
         # Si no llega la data pedida error 400 bad request
