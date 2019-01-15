@@ -125,7 +125,7 @@ def validar_ticket(request):
                 ticket.save()
                 response_data = {
                     "token_data": {"token": token, "refresh_token": refresh_token, "fecha_exp": str(fecha_exp)},
-                    "user_data": data}
+                    "user_data": {"nombres":data['info']['nombres'], "apellidos":data['info']['apellidos']}}
                 return Response(response_data, status=200)
 
             # Si el ticket no es valido retorna HTTP 401 unathorized
@@ -159,14 +159,14 @@ def puertas(request):
                                               auth=(usuario_servidor, password_servidor),
                                               verify=False)
                     puertas_json = extraccion.json()
-                    puertas_lista=[]
+                    puertas_lista = []
                     for key, value in puertas_json.items():
                         puertas_lista.append(value)
 
                     return Response(puertas_lista, status=200)
                 # Si el ticket es invalido retornar HTTP 403 unauthorized
                 else:
-                    return Response("Token invalido", status=403)
+                    return Response("Token expirado", status=403)
             else:
                 return Response("Token invalido", status=401)
         # Si no llega la data pedida error 400 bad request
@@ -189,7 +189,7 @@ def abrir_puerta(request):
             # Verificar que el token este activo
             token_bd = Tokens.objects.filter(token=token, estado=True)
             if token_bd.exists():
-                #extraer el token
+                # extraer el token
                 token_bd = Tokens.objects.get(token=token, estado=True)
                 if token_bd.fecha_exp > timezone.now():
                     # Solicita al servidor abrir la puerta pedida por la vista
@@ -209,7 +209,7 @@ def abrir_puerta(request):
                         return Response("Acceso denegado", status=401)
                 # Si el ticket no es valido HTTP 401 unauthorized
                 else:
-                    return Response("Token invalido", status=403)
+                    return Response("Token expirado", status=403)
             else:
                 return Response("Token invalido", status=401)
         else:
