@@ -62,7 +62,7 @@ def refrescar_token(request):
                     token_actual_bdd.fecha_m = timezone.now()
                     token_actual_bdd.save()
                     fecha = timezone.now()
-                    fecha_exp = (timezone.now() + dt.timedelta(minutes=5))
+                    fecha_exp = (timezone.now() + dt.timedelta(minutes=120))
                     # Crear una nueva fila en la lista de tokens
                     token_actualizado = Tokens(token=nuevo_token, refresh_token=nuevo_refresh_token,
                                                fecha_exp=fecha_exp,
@@ -112,7 +112,7 @@ def validar_ticket(request):
                         'utf-8'))
                 refresh_token = refresh_token_hash.hexdigest()
                 fecha = timezone.now()
-                fecha_exp = (timezone.now() + dt.timedelta(minutes=5))
+                fecha_exp = (timezone.now() + dt.timedelta(minutes=120))
                 bd_token = Tokens(token=token, refresh_token=refresh_token,
                                   fecha_exp=fecha_exp,
                                   estado=True, fecha_c=fecha, fecha_m=fecha)
@@ -158,8 +158,12 @@ def puertas(request):
                     extraccion = requests.get(url=url_puertas, params=params,
                                               auth=(usuario_servidor, password_servidor),
                                               verify=False)
-                    puertas_listado = extraccion.json()
-                    return Response(puertas_listado, status=200)
+                    puertas_json = extraccion.json()
+                    puertas_lista=[]
+                    for key, value in puertas_json.items():
+                        puertas_lista.append(value)
+
+                    return Response(puertas_lista, status=200)
                 # Si el ticket es invalido retornar HTTP 403 unauthorized
                 else:
                     return Response("Token invalido", status=403)
