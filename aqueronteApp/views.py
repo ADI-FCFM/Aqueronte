@@ -30,45 +30,52 @@ def consulta_cas(ticket):
 @api_view(['GET', 'POST'])
 def refrescar_token(request):
     if request.method == 'POST':
+        #Recibir informacion
         token_actual = request.data.get('token')
         r_token_actual = request.data.get('refresh_token')
+        #Si la informacion existe
         if token_actual is not None and r_token_actual is not None:
-            token_actual_bdd = Tokens.objects.filter(token=token_actual, status=True)
-            token_bdd = token_actual_bdd.get('token')
-            r_token_bdd = token_actual.bdd.get('refresh_token')
-            if token_bdd == token_actual and r_token_bdd == r_token_actual:
-                # Generar nuevo token y refresh token
-                usuario_original = Usuarios.objects.get(id_sesion=token_actual_bdd)
-                old_ticket = Tickets.objects.get(usuario=usuario_original)
-                nuevo_token = hashlib.sha256(
-                    (old_ticket + str(datetime.timestamp(timezone.now())) + str(randint(0, 1000000))).encode(
-                        'utf-8')).hexdigest()
-                print(nuevo_token)
-                nuevo_refresh_token = hashlib.sha256(
-                    (old_ticket + str(datetime.timestamp(timezone.now())) + str(randint(0, 1000000))).encode(
-                        'utf-8')).hexdigest()
+            #Buscar el Token actual
+            token_actual_bdd = Tokens.objects.filter(token=token_actual, estado=True)[0]
+            if token_actual_bdd:
+                print(token_actual_bdd)
+                token_bdd = token_actual_bdd.token
+                r_token_bdd = token_actual_bdd.refresh_token
+                if token_bdd == token_actual and r_token_bdd == r_token_actual:
+                    # Generar nuevo token y refresh token
+                    usuario_original = Usuarios.objects.get(id_sesion=token_actual_bdd)
+                    old_ticket = Tickets.objects.get(usuario=usuario_original).ticket_cas
+                    nuevo_token = hashlib.sha256(
+                        (old_ticket + str(datetime.timestamp(timezone.now())) + str(randint(0, 1000000))).encode(
+                            'utf-8')).hexdigest()
+                    print(nuevo_token)
+                    nuevo_refresh_token = hashlib.sha256(
+                        (old_ticket + str(datetime.timestamp(timezone.now())) + str(randint(0, 1000000))).encode(
+                            'utf-8')).hexdigest()
 
-                # Deshabilitar el token actual
-                token_actual_bdd.estado = False
-                token_actual_bdd.fecha_m = datetime.now(tz=None)
-                token_actual_bdd.save()
-                fecha = timezone.now()
-                fecha_exp = (datetime.now(tz=None) + dt.timedelta(minutes=5))
-                # Crear una nueva fila en la lista de tokens
-                token_actualizado = Tokens(token=nuevo_token, refresh_token=nuevo_refresh_token,
-                                           fecha_exp=fecha_exp,
-                                           estado=True, fecha_c=fecha, fecha_m=fecha)
-                token_actualizado.save()
-                # Actualizar token asociado al usuario guardandolo en una nueva fila
-                usuario = usuario_original
-                usuario.id_sesion = token_actualizado
-                usuario.save()
+                    # Deshabilitar el token actual
+                    token_actual_bdd.estado = False
+                    token_actual_bdd.fecha_m = timezone.now()
+                    token_actual_bdd.save()
+                    fecha = timezone.now()
+                    fecha_exp = (timezone.now() + dt.timedelta(minutes=5))
+                    # Crear una nueva fila en la lista de tokens
+                    token_actualizado = Tokens(token=nuevo_token, refresh_token=nuevo_refresh_token,
+                                               fecha_exp=fecha_exp,
+                                               estado=True, fecha_c=fecha, fecha_m=fecha)
+                    token_actualizado.save()
+                    # Actualizar token asociado al usuario guardandolo en una nueva fila
+                    usuario = usuario_original
+                    usuario.id_sesion = token_actualizado
+                    usuario.save()
 
-                # Responder con la informacion actualizada
-                data = {"token": nuevo_token, "refresh_token": nuevo_refresh_token, "fecha_exp": fecha_exp}
-                return Response(data, status=200)
+                    # Responder con la informacion actualizada
+                    data = {"token": nuevo_token, "refresh_token": nuevo_refresh_token, "fecha_exp": fecha_exp}
+                    return Response(data, status=200)
+                else:
+                    return Response('Credenciales incorrectas', status=403)
             else:
-                return Response('Credenciales incorrectas', status=403)
+                return Response("Token incorrescto", status=400)
         else:
             return Response('Data erronea', status=400)
     else:

@@ -9,5 +9,6 @@ urlpatterns = (
     path('puertas', views.puertas, name='puertas'),
     path('puertas/<str:token>', views.puertas, name='puertas'),
     path('abrir', views.abrir_puerta, name='abrir_puerta'),
+    path('refrescar_token', views.refrescar_token, name='refrescar_token'),
 
 )
