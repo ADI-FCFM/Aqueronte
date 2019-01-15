@@ -184,7 +184,7 @@ def abrir_puerta(request):
         if token is not None and id_puerta is not None:
             # Verificar que el token este activo
             token_bd = Tokens.objects.filter(token=token, estado=True)
-            if token_bd.exist():
+            if token_bd.exists():
                 #extraer el token
                 token_bd = Tokens.objects.get(token=token, estado=True)
                 if token_bd.fecha_exp > timezone.now():
