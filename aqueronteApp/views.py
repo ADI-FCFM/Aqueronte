@@ -87,20 +87,21 @@ def validar_ticket(request):
         if view_ticket is not None:
             # Validacion del ticket
             data = consulta_cas(view_ticket)
-            # Si el ticket es valido lo guarda los datos del usuario en la BDD y retorna los datos junto a un codigo
-            # HTTP 200
+            # Si el ticket es valido actualiza la base de datos con la información recibida y retorna los datos junto a
+            # un codigo HTTP 200
             if data['valid']:
+                # Genera el token y refresh token con hash256
                 token_hash = hashlib.sha256(
                     (view_ticket + str(datetime.timestamp(timezone.now())) + str(randint(0, 1000000))).encode(
                         'utf-8'))
                 token = token_hash.hexdigest()
-
+                print("El token generado es", token)
                 refresh_token_hash = hashlib.sha256(
                     (view_ticket + str(datetime.timestamp(timezone.now())) + str(randint(0, 1000000))).encode(
                         'utf-8'))
                 refresh_token = refresh_token_hash.hexdigest()
                 fecha = timezone.now()
-                fecha_exp = (datetime.now(tz=None) + dt.timedelta(minutes=5))
+                fecha_exp = (timezone.now() + dt.timedelta(minutes=5))
                 bd_token = Tokens(token=token, refresh_token=refresh_token,
                                   fecha_exp=fecha_exp,
                                   estado=True, fecha_c=fecha, fecha_m=fecha)
@@ -114,7 +115,6 @@ def validar_ticket(request):
                 response_data = {
                     "token_data": {"token": token, "refresh_token": refresh_token, "fecha_exp": str(fecha_exp)},
                     "user_data": data}
-                print(response_data)
                 return Response(response_data, status=200)
 
             # Si el ticket no es valido retorna HTTP 401 unathorized
@@ -129,16 +129,19 @@ def validar_ticket(request):
 
 @api_view(['GET', 'POST'])
 # PUERTAS:
-# Recibe el ticket desde la vista por un metodo post, lo revalida con el CAS para verificar que sigue activo. Si esta
+# Recibe el token desde de la vista por un metodo post, Verifica que este activo en la base de datos. Si esta
 # activo busca el nombre del usuario y pide al servidor las puertas a las cuales tiene acceso retornandolas a la vista
 # con un codigo http 200
 def puertas(request):
-    if request.method == 'POST':
+    if request.method == 'GET':
         # Recibir el ticket desde la vista
-        token = request.data.get('token')
+        token = request.query_params.get('token')
         if token is not None:
             # Verificar que el token este activo
             token_bd = Tokens.objects.get(token=token, estado=True)
+            print(token_bd.fecha_exp > timezone.now())
+            print(token_bd.fecha_exp)
+            print(timezone.now())
             if token_bd.fecha_exp > timezone.now():
                 # Solicitar al servidor las puertas del usuario y retornarlas junto a un codigo HTTP 200
                 pers_id = Usuarios.objects.get(id_sesion=token_bd).pers_id
@@ -148,7 +151,7 @@ def puertas(request):
                                           verify=False)
                 puertas_listado = extraccion.json()
                 return Response(puertas_listado, status=200)
-            # Si el ticket es invalido retornar HTTP 401 unauthorized
+            # Si el ticket es invalido retornar HTTP 403 unauthorized
             else:
                 return Response("Token invalido", status=403)
         # Si no llega la data pedida error 400 bad request
@@ -160,8 +163,8 @@ def puertas(request):
 
 @api_view(['GET', 'POST'])
 # ABRIR_PUERTA:
-# Recibe desde la vista la id de una puerta y el ticket del usuario, lo revalida con el CAS para verificar que siga
-# activo y en caso de ser asi, pide al servidor abrir la puerta. Si lo logra, retorna codigo HTTP 200, sino 401
+# Recibe desde la vista la id de una puerta y el token del usuario, verifica que este activo en la base de datos
+#  y en caso de ser asi, pide al servidor abrir la puerta. Si lo logra, retorna codigo HTTP 200, sino 401
 def abrir_puerta(request):
     if request.method == 'POST':
         # Recibir informacion
@@ -169,9 +172,8 @@ def abrir_puerta(request):
         token = request.data.get('token')
         if token is not None and id_puerta is not None:
             # Verificar que el token este activo
-            token_bd = Tokens.objects.get(token=token)
-            estado_token = token_bd.estado
-            if estado_token:
+            token_bd = Tokens.objects.get(token=token, estado=True)
+            if token_bd.fecha_exp > timezone.now():
                 # Solicita al servidor abrir la puerta pedida por la vista
                 id_usuario = Usuarios.objects.get(id_sesion=token_bd).pers_id
                 params = {'id': id_puerta, 'pers_id': id_usuario}
@@ -192,5 +194,21 @@ def abrir_puerta(request):
                 return Response("Ticket invalido", status=401)
         else:
             return Response("Error en la data", status=400)
+    else:
+        return Response("Esperando", status=200)
+
+
+@api_view(['GET', 'POST'])
+# CERRAR-SESION:
+# Inhabilita el token activo del usuario
+def cerrar_sesion(request):
+    if request.method == 'POST':
+        token = request.data.get('token')
+        if token is not None:
+            bd_token = Tokens.objects.get(token=token)
+            bd_token.estado = False
+            return Response("Tokens desactivados", status=200)
+        else:
+            return Response("Data erronea", status=400)
     else:
         return Response("Esperando", status=200)
