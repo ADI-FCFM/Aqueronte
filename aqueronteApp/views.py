@@ -125,7 +125,7 @@ def validar_ticket(request):
                 ticket.save()
                 response_data = {
                     "token_data": {"token": token, "refresh_token": refresh_token, "fecha_exp": str(fecha_exp)},
-                    "user_data": {"nombres":data['info']['nombres'], "apellidos":data['info']['apellidos']}}
+                    "user_data": {"nombres": data['info']['nombres'], "apellidos": data['info']['apellidos']}}
                 return Response(response_data, status=200)
 
             # Si el ticket no es valido retorna HTTP 401 unathorized
@@ -164,7 +164,7 @@ def puertas(request):
                         puertas_lista.append(value)
 
                     return Response(puertas_lista, status=200)
-                # Si el ticket es invalido retornar HTTP 403 unauthorized
+                # Si el ticket esta expirado retornar HTTP 403 unauthorized
                 else:
                     return Response("Token expirado", status=403)
             else:
@@ -225,9 +225,14 @@ def cerrar_sesion(request):
     if request.method == 'POST':
         token = request.data.get('token')
         if token is not None:
-            bd_token = Tokens.objects.get(token=token)
-            bd_token.estado = False
-            return Response("Tokens desactivados", status=200)
+            bd_token = Tokens.objects.filter(token=token, estado=True)
+            if bd_token.exists():
+                bd_token = Tokens.objects.get(token=token)
+                bd_token.estado = False
+                bd_token.save()
+                return Response("Tokens desactivados", status=200)
+            else:
+                return Response("Token inválido", status=401)
         else:
             return Response("Data erronea", status=400)
     else:
