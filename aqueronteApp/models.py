@@ -1,3 +1,5 @@
+from django.utils import timezone
+
 from django.db import models
 
 
@@ -19,6 +21,12 @@ class Tokens(models.Model):
     fecha_c = models.DateTimeField(auto_now_add=True)
     fecha_m = models.DateTimeField(auto_now=True)
     usuario= models.ForeignKey(Usuarios, on_delete=models.CASCADE)
+
+    def is_valido(self):
+        if self.fecha_exp > timezone.now():
+            return True
+        else:
+            return False
 
 # Guarda los datos del usuario asociados a su ticket
 class Tickets(models.Model):

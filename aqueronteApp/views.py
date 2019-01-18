@@ -10,34 +10,13 @@ import hashlib
 
 from rest_framework.views import APIView
 
+from aqueronteApp.FuncionesAuxiliares import verificar_token, consulta_cas
 from aqueronteApp.configuracion import *
 from aqueronteApp.models import Tickets, Usuarios, Tokens
 from aqueronteApp.credentials import *
 
 
 # Create your views here.
-
-# CONSULTA_CAS:
-# Funcion auxiliar para realizar la validacion del ticket en el CAS, evita la reutilizacion de codigo ya que el
-# ticket se revalida constantemente
-def consulta_cas(ticket):
-    # Validacion del ticket
-    params = {'ticket': ticket}
-    extraccion = requests.get(url=URL_CAS, params=params, verify=False)
-    data = extraccion.json()
-    return data
-
-
-# Verificar token:
-# Funcion auxiliar destinada a evistar codigo repetido en la validacion del token
-def verificar_token(token):
-    token_bdd = Tokens.objects.filter(token=token, estado=True)
-    if token_bdd.exists():
-        # Extraer el token actual
-        token_bdd = Tokens.objects.get(token=token, estado=True)
-        return token_bdd
-    else:
-        return None
 
 
 # Refrescar_token:
@@ -154,7 +133,7 @@ class Puertas(APIView):
         if token is not None:
             token_bd = verificar_token(token)
             if token_bd is not None:
-                if token_bd.fecha_exp > timezone.now():
+                if token_bd.is_valido():
                     # Solicitar al servidor las puertas del usuario y retornarlas junto a un codigo HTTP 200
                     pers_id = Tokens.objects.get(token=token_bd.token).usuario.pers_id
                     params = {"pers_id": pers_id}
@@ -185,7 +164,7 @@ class Puertas(APIView):
             # Verificar que el token este activo
             token_bd = verificar_token(token)
             if token_bd is not None:
-                if token_bd.fecha_exp > timezone.now():
+                if token_bd.is_valido():
                     # Solicita al servidor abrir la puerta pedida por la vista
                     pers_id = Tokens.objects.get(token=token_bd.token).usuario.pers_id
                     params = {'id': id_puerta, 'pers_id': pers_id}
