@@ -21,7 +21,7 @@ from aqueronteApp.credentials import *
 def consulta_cas(ticket):
     # Validacion del ticket
     params = {'ticket': ticket}
-    extraccion = requests.get(url=url_cas, params=params, verify=False)
+    extraccion = requests.get(url=URL_CAS, params=params, verify=False)
     data = extraccion.json()
     return data
 
@@ -157,8 +157,8 @@ def puertas(request):
                     # Solicitar al servidor las puertas del usuario y retornarlas junto a un codigo HTTP 200
                     pers_id = Usuarios.objects.get(id_sesion=token_bd).pers_id
                     params = {"pers_id": pers_id}
-                    extraccion = requests.get(url=url_puertas, params=params,
-                                              auth=(usuario_servidor, password_servidor),
+                    extraccion = requests.get(url=URL_PUERTAS, params=params,
+                                              auth=(USUARIO_SERVICIOS, CLAVE_SERVICIOS),
                                               verify=False)
                     puertas_json = extraccion.json()
                     puertas_lista = []
@@ -198,8 +198,8 @@ def abrir_puerta(request):
                     # Solicita al servidor abrir la puerta pedida por la vista
                     id_usuario = Usuarios.objects.get(id_sesion=token_bd).pers_id
                     params = {'id': id_puerta, 'pers_id': id_usuario}
-                    peticion_apertura = requests.get(url=url_abrir, params=params,
-                                                     auth=(usuario_servidor, password_servidor),
+                    peticion_apertura = requests.get(url=URL_ABRIR, params=params,
+                                                     auth=(USUARIO_SERVICIOS, CLAVE_SERVICIOS),
                                                      verify=False)
                     respuesta_servidor = peticion_apertura.json()
 
