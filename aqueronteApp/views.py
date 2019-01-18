@@ -32,7 +32,7 @@ def verificar_token(token):
     token_bdd = Tokens.objects.filter(token=token, estado=True)
     if token_bdd.exists():
         # Extraer el token actual
-        token_bdd = Tokens.objects.get(token=token)
+        token_bdd = Tokens.objects.get(token=token, estado= True)
         return token_bdd
     else:
         return None
@@ -57,8 +57,8 @@ def refrescar_token(request):
                 if token_bdd == token_actual and r_token_bdd == r_token_actual:
                     # Generar nuevo token y refresh token
                     # obtener al usuario
-                    usuario = Tokens.objects.get(token=token_bdd).usuario
-                    old_ticket = Tickets.objects.get(usuario=usuario).ticket_cas
+                    usuario = token_actual_bdd.usuario
+                    old_ticket = Tickets.objects.filter(usuario=usuario)[0].ticket_cas
                     nuevo_token = hashlib.sha256(
                         (old_ticket + str(datetime.timestamp(timezone.now())) + str(randint(0, 1000000))).encode(
                             'utf-8')).hexdigest()
@@ -70,9 +70,9 @@ def refrescar_token(request):
                     token_actual_bdd.estado = False
                     token_actual_bdd.fecha_m = timezone.now()
                     token_actual_bdd.save()
+                    #Crear un nuevo token
                     fecha = timezone.now()
                     fecha_exp = (timezone.now() + dt.timedelta(minutes=DURACION_TOKEN))
-                    # Crear una nueva fila en la lista de tokens
                     token_actualizado = Tokens(token=nuevo_token, refresh_token=nuevo_refresh_token,
                                                fecha_exp=fecha_exp,
                                                estado=True, fecha_c=fecha, fecha_m=fecha, usuario=usuario)
