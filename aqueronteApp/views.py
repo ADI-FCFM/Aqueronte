@@ -1,5 +1,4 @@
 # from django.shortcuts import render
-import copy
 import datetime as dt
 from datetime import *
 from random import randint
@@ -8,6 +7,9 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 import requests
 import hashlib
+
+from rest_framework.views import APIView
+
 from aqueronteApp.configuracion import *
 from aqueronteApp.models import Tickets, Usuarios, Tokens
 from aqueronteApp.credentials import *
@@ -32,7 +34,7 @@ def verificar_token(token):
     token_bdd = Tokens.objects.filter(token=token, estado=True)
     if token_bdd.exists():
         # Extraer el token actual
-        token_bdd = Tokens.objects.get(token=token, estado= True)
+        token_bdd = Tokens.objects.get(token=token, estado=True)
         return token_bdd
     else:
         return None
@@ -69,7 +71,7 @@ def refrescar_token(request):
                     # Deshabilitar el token actual
                     token_actual_bdd.estado = False
                     token_actual_bdd.save()
-                    #Crear un nuevo token
+                    # Crear un nuevo token
                     fecha_exp = (timezone.now() + dt.timedelta(minutes=DURACION_TOKEN))
                     token_actualizado = Tokens(token=nuevo_token, refresh_token=nuevo_refresh_token,
                                                fecha_exp=fecha_exp,
@@ -144,13 +146,9 @@ def validar_ticket(request):
         return Response("Metodo no permitido", status=405)
 
 
-@api_view(['GET', 'POST'])
-# PUERTAS:
-# Recibe el token desde de la vista por un metodo post, Verifica que este activo en la base de datos. Si esta
-# activo busca el nombre del usuario y pide al servidor las puertas a las cuales tiene acceso retornandolas a la vista
-# con un codigo http 200
-def puertas(request):
-    if request.method == 'GET':
+class Puertas(APIView):
+    @staticmethod
+    def get(request):
         # Recibir el ticket desde la vista
         token = request.query_params.get('token')
         if token is not None:
@@ -158,7 +156,7 @@ def puertas(request):
             if token_bd is not None:
                 if token_bd.fecha_exp > timezone.now():
                     # Solicitar al servidor las puertas del usuario y retornarlas junto a un codigo HTTP 200
-                    pers_id = Usuarios.objects.get(id_sesion=token_bd).pers_id
+                    pers_id = Tokens.objects.get(token=token_bd.token).usuario.pers_id
                     params = {"pers_id": pers_id}
                     extraccion = requests.get(url=URL_PUERTAS, params=params,
                                               auth=(USUARIO_SERVICIOS, CLAVE_SERVICIOS),
@@ -177,30 +175,20 @@ def puertas(request):
         # Si no llega la data pedida error 400 bad request
         else:
             return Response("Error en la data", status=400)
-    else:
-        # Si la informacion llega por un metodo que no es POST
-        return Response("Metodo no permitido", status=405)
 
-
-@api_view(['GET', 'POST'])
-# ABRIR_PUERTA:
-# Recibe desde la vista la id de una puerta y el token del usuario, verifica que este activo en la base de datos
-#  y en caso de ser asi, pide al servidor abrir la puerta. Si lo logra, retorna codigo HTTP 200, sino 401
-def abrir_puerta(request):
-    if request.method == 'POST':
+    @staticmethod
+    def post(request):
         # Recibir informacion
         id_puerta = request.data.get('id')
         token = request.data.get('token')
         if token is not None and id_puerta is not None:
             # Verificar que el token este activo
-            token_bd = Tokens.objects.filter(token=token, estado=True)
-            if token_bd.exists():
-                # extraer el token
-                token_bd = Tokens.objects.get(token=token, estado=True)
+            token_bd = verificar_token(token)
+            if token_bd is not None:
                 if token_bd.fecha_exp > timezone.now():
                     # Solicita al servidor abrir la puerta pedida por la vista
-                    id_usuario = Usuarios.objects.get(id_sesion=token_bd).pers_id
-                    params = {'id': id_puerta, 'pers_id': id_usuario}
+                    pers_id = Tokens.objects.get(token=token_bd.token).usuario.pers_id
+                    params = {'id': id_puerta, 'pers_id': pers_id}
                     peticion_apertura = requests.get(url=URL_ABRIR, params=params,
                                                      auth=(USUARIO_SERVICIOS, CLAVE_SERVICIOS),
                                                      verify=False)
@@ -220,9 +208,6 @@ def abrir_puerta(request):
                 return Response("Token invalido", status=401)
         else:
             return Response("Error en la data", status=400)
-    else:
-        # Si la informacion llega por un metodo que no es POST
-        return Response("Metodo no permitido", status=405)
 
 
 @api_view(['GET', 'POST'])
@@ -232,11 +217,10 @@ def cerrar_sesion(request):
     if request.method == 'POST':
         token = request.data.get('token')
         if token is not None:
-            bd_token = Tokens.objects.filter(token=token, estado=True)
-            if bd_token.exists():
-                bd_token = Tokens.objects.get(token=token)
-                bd_token.estado = False
-                bd_token.save()
+            token_bd = verificar_token(token)
+            if token_bd is not None:
+                token_bd.estado = False
+                token_bd.save()
                 return Response("Tokens desactivados", status=200)
             else:
                 return Response("Token inválido", status=401)
