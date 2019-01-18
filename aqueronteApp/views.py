@@ -26,6 +26,18 @@ def consulta_cas(ticket):
     return data
 
 
+# Verificar token:
+# Funcion auxiliar destinada a evistar codigo repetido en la validacion del token
+def verificar_token(token):
+    token_bdd = Tokens.objects.filter(token=token, estado=True)
+    if token_bdd.exists():
+        # Extraer el token actual
+        token_bdd = Tokens.objects.get(token=token)
+        return token_bdd
+    else:
+        return None
+
+
 # Refrescar_token:
 # Busca un token expirado en la base de datos y si esta expirado lo cambia por un token nuevo y lo retorna
 @api_view(['GET', 'POST'])
@@ -37,22 +49,19 @@ def refrescar_token(request):
         # Si la informacion existe
         if token_actual is not None and r_token_actual is not None:
             # Buscar el Token actual
-            token_actual_bdd = Tokens.objects.filter(token=token_actual, estado=True)
-            if token_actual_bdd.exists():
+            token_actual_bdd = verificar_token(token_actual)
+            if token_actual_bdd is not None:
                 # Extraer el token actual
-                token_actual_bdd = Tokens.objects.get(token=token_actual)
-                print(token_actual_bdd)
                 token_bdd = token_actual_bdd.token
                 r_token_bdd = token_actual_bdd.refresh_token
                 if token_bdd == token_actual and r_token_bdd == r_token_actual:
                     # Generar nuevo token y refresh token
-                    print(token_actual_bdd)
-                    usuario_original = Usuarios.objects.get(id_sesion=token_actual_bdd)
-                    old_ticket = Tickets.objects.get(usuario=usuario_original).ticket_cas
+                    # obtener al usuario
+                    usuario = Tokens.objects.get(token=token_bdd).usuario
+                    old_ticket = Tickets.objects.get(usuario=usuario).ticket_cas
                     nuevo_token = hashlib.sha256(
                         (old_ticket + str(datetime.timestamp(timezone.now())) + str(randint(0, 1000000))).encode(
                             'utf-8')).hexdigest()
-                    print(nuevo_token)
                     nuevo_refresh_token = hashlib.sha256(
                         (old_ticket + str(datetime.timestamp(timezone.now())) + str(randint(0, 1000000))).encode(
                             'utf-8')).hexdigest()
@@ -66,12 +75,8 @@ def refrescar_token(request):
                     # Crear una nueva fila en la lista de tokens
                     token_actualizado = Tokens(token=nuevo_token, refresh_token=nuevo_refresh_token,
                                                fecha_exp=fecha_exp,
-                                               estado=True, fecha_c=fecha, fecha_m=fecha)
+                                               estado=True, fecha_c=fecha, fecha_m=fecha, usuario=usuario)
                     token_actualizado.save()
-                    # Actualizar token asociado al usuario guardandolo en una nueva fila
-                    usuario = copy.deepcopy(usuario_original)
-                    usuario.id_sesion = token_actualizado
-                    usuario.save()
 
                     # Responder con la informacion actualizada
                     data = {"token": nuevo_token, "refresh_token": nuevo_refresh_token, "fecha_exp": fecha_exp}
@@ -114,15 +119,17 @@ def validar_ticket(request):
                 refresh_token = refresh_token_hash.hexdigest()
                 fecha = timezone.now()
                 fecha_exp = (timezone.now() + dt.timedelta(minutes=DURACION_TOKEN))
+                usuario, created = Usuarios.objects.get_or_create(pers_id=data["info"]['rut'],
+                                                                  defaults={"nombres": data['info']['nombres'],
+                                                                            "apellidos": data['info']['apellidos'],
+                                                                            "fecha_c": fecha})
+                usuario.save()
                 bd_token = Tokens(token=token, refresh_token=refresh_token,
                                   fecha_exp=fecha_exp,
-                                  estado=True, fecha_c=fecha, fecha_m=fecha)
+                                  estado=True, fecha_c=fecha, fecha_m=fecha, usuario=usuario)
                 bd_token.save()
 
-                user = Usuarios(pers_id=data["info"]['rut'], nombres=data['info']['nombres'],
-                                apellidos=data['info']['apellidos'], id_sesion=bd_token, fecha_c=fecha)
-                user.save()
-                ticket = Tickets(ticket_cas=data['ticket'], usuario=user, fecha=fecha)
+                ticket = Tickets(ticket_cas=data['ticket'], usuario=usuario, fecha=fecha)
                 ticket.save()
                 response_data = {
                     "token_data": {"token": token, "refresh_token": refresh_token, "fecha_exp": str(fecha_exp)},
