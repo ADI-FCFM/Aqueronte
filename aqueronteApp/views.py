@@ -62,7 +62,7 @@ def refrescar_token(request):
                     token_actual_bdd.fecha_m = timezone.now()
                     token_actual_bdd.save()
                     fecha = timezone.now()
-                    fecha_exp = (timezone.now() + dt.timedelta(minutes=120))
+                    fecha_exp = (timezone.now() + dt.timedelta(minutes=DURACION_TOKEN))
                     # Crear una nueva fila en la lista de tokens
                     token_actualizado = Tokens(token=nuevo_token, refresh_token=nuevo_refresh_token,
                                                fecha_exp=fecha_exp,
@@ -83,7 +83,8 @@ def refrescar_token(request):
         else:
             return Response('Data erronea', status=400)
     else:
-        return Response("Esperando", status=200)
+        # Si la informacion llega por un metodo que no es POST
+        return Response("Metodo no permitido", status=405)
 
 
 @api_view(['GET', 'POST'])
@@ -112,7 +113,7 @@ def validar_ticket(request):
                         'utf-8'))
                 refresh_token = refresh_token_hash.hexdigest()
                 fecha = timezone.now()
-                fecha_exp = (timezone.now() + dt.timedelta(minutes=120))
+                fecha_exp = (timezone.now() + dt.timedelta(minutes=DURACION_TOKEN))
                 bd_token = Tokens(token=token, refresh_token=refresh_token,
                                   fecha_exp=fecha_exp,
                                   estado=True, fecha_c=fecha, fecha_m=fecha)
@@ -135,7 +136,8 @@ def validar_ticket(request):
         else:
             return Response("Error en la data", status=400)
     else:
-        return Response("Esperando", status=200)
+        # Si la informacion llega por un metodo que no es POST
+        return Response("Metodo no permitido", status=405)
 
 
 @api_view(['GET', 'POST'])
@@ -173,7 +175,8 @@ def puertas(request):
         else:
             return Response("Error en la data", status=400)
     else:
-        return Response("Esperando", status=200)
+        # Si la informacion llega por un metodo que no es POST
+        return Response("Metodo no permitido", status=405)
 
 
 @api_view(['GET', 'POST'])
@@ -215,7 +218,8 @@ def abrir_puerta(request):
         else:
             return Response("Error en la data", status=400)
     else:
-        return Response("Esperando", status=200)
+        # Si la informacion llega por un metodo que no es POST
+        return Response("Metodo no permitido", status=405)
 
 
 @api_view(['GET', 'POST'])
@@ -229,6 +233,7 @@ def cerrar_sesion(request):
             if bd_token.exists():
                 bd_token = Tokens.objects.get(token=token)
                 bd_token.estado = False
+                bd_token.fecha_m = timezone.now()
                 bd_token.save()
                 return Response("Tokens desactivados", status=200)
             else:
@@ -236,4 +241,5 @@ def cerrar_sesion(request):
         else:
             return Response("Data erronea", status=400)
     else:
-        return Response("Esperando", status=200)
+        # Si la informacion llega por un metodo que no es POST
+        return Response("Metodo no permitido", status=405)
