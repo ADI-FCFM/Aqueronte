@@ -8,7 +8,7 @@ class Usuarios(models.Model):
     pers_id = models.CharField(max_length=60, primary_key=True)
     nombres = models.CharField(max_length=60)
     apellidos = models.CharField(max_length=60)
-    fecha_c = models.DateTimeField()
+    fecha_c = models.DateTimeField(auto_now_add=True)
 
 # guarda los datos del token activo
 class Tokens(models.Model):
@@ -16,7 +16,7 @@ class Tokens(models.Model):
     refresh_token = models.CharField(max_length=256)
     fecha_exp = models.DateTimeField()
     estado = models.BooleanField()
-    fecha_c = models.DateTimeField()
+    fecha_c = models.DateTimeField(auto_now_add=True)
     fecha_m = models.DateTimeField(auto_now=True)
     usuario= models.ForeignKey(Usuarios, on_delete=models.CASCADE)
 
@@ -24,4 +24,4 @@ class Tokens(models.Model):
 class Tickets(models.Model):
     ticket_cas = models.CharField(max_length=256)
     usuario = models.ForeignKey(Usuarios, on_delete=models.CASCADE)
-    fecha = models.DateTimeField()
+    fecha = models.DateTimeField(auto_now_add=True)
