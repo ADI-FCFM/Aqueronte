@@ -170,10 +170,11 @@ class Puertas(APIView):
                                               auth=(USUARIO_SERVICIOS, CLAVE_SERVICIOS),
                                               verify=False)
                     puertas_json = extraccion.json()
-                    # Parsea las puertas en una lista
                     puertas_lista = []
-                    for key, value in puertas_json.items():
-                        puertas_lista.append(value)
+                    if puertas_json:
+                        # Parsea las puertas en una lista
+                        for key, value in puertas_json.items():
+                            puertas_lista.append(value)
 
                     return Response(puertas_lista, status=200)
                 # Si el ticket esta expirado retornar HTTP 403 unauthorized
