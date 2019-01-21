@@ -207,14 +207,16 @@ class Puertas(APIView):
                                                      auth=(USUARIO_SERVICIOS, CLAVE_SERVICIOS),
                                                      verify=False)
                     respuesta_servidor = peticion_apertura.json()
+                    if respuesta_servidor:
+                        # Si la puerta se abrio retorna HTTP 200
+                        if respuesta_servidor['estado']:
+                            return Response("Acceso concedido", status=200)
 
-                    # Si la puerta se abrio retorna HTTP 200
-                    if respuesta_servidor['estado']:
-                        return Response("Acceso concedido", status=200)
-
-                    # Si la puerta no se abrio, HTTP 401 unauthorized
+                        # Si la puerta no se abrio, HTTP 401 unauthorized
+                        else:
+                            return Response("Acceso denegado", status=401)
                     else:
-                        return Response("Acceso denegado", status=401)
+                        return Response("Acceso Denegado", status=401)
                 # Si el token esta expirado
                 else:
                     return Response("Token expirado", status=403)
