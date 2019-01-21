@@ -12,6 +12,7 @@ class Usuarios(models.Model):
     apellidos = models.CharField(max_length=60)
     fecha_c = models.DateTimeField(auto_now_add=True)
 
+
 # guarda los datos del token activo
 class Tokens(models.Model):
     token = models.CharField(max_length=256)
@@ -20,13 +21,15 @@ class Tokens(models.Model):
     estado = models.BooleanField()
     fecha_c = models.DateTimeField(auto_now_add=True)
     fecha_m = models.DateTimeField(auto_now=True)
-    usuario= models.ForeignKey(Usuarios, on_delete=models.CASCADE)
+    usuario = models.ForeignKey(Usuarios, on_delete=models.CASCADE)
 
+    # Verificación del estado de expiracion de un token
     def is_valido(self):
         if self.fecha_exp > timezone.now():
             return True
         else:
             return False
+
 
 # Guarda los datos del usuario asociados a su ticket
 class Tickets(models.Model):

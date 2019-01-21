@@ -20,7 +20,8 @@ from aqueronteApp.credentials import *
 
 
 # Refrescar_token:
-# Busca un token expirado en la base de datos y si esta expirado lo cambia por un token nuevo y lo retorna
+# Busca un token expirado en la base de datos con la funcion auxiliar VERIFICAR_TOKEN,lo cambia por un token nuevo
+# y lo retorna
 @api_view(['GET', 'POST'])
 def refrescar_token(request):
     if request.method == 'POST':
@@ -35,10 +36,11 @@ def refrescar_token(request):
                 # Extraer el token actual
                 token_bdd = token_actual_bdd.token
                 r_token_bdd = token_actual_bdd.refresh_token
+                # Verificar que credenciales esten correctas
                 if token_bdd == token_actual and r_token_bdd == r_token_actual:
-                    # Generar nuevo token y refresh token
                     # obtener al usuario
                     usuario = token_actual_bdd.usuario
+                    # Generar nuevo token y refresh token utilizando funcion de hash
                     old_ticket = Tickets.objects.filter(usuario=usuario)[0].ticket_cas
                     nuevo_token = hashlib.sha256(
                         (old_ticket + str(datetime.timestamp(timezone.now())) + str(randint(0, 1000000))).encode(
@@ -60,10 +62,13 @@ def refrescar_token(request):
                     # Responder con la informacion actualizada
                     data = {"token": nuevo_token, "refresh_token": nuevo_refresh_token, "fecha_exp": fecha_exp}
                     return Response(data, status=200)
+                # Token o refresh token no coinciden con la base de datos
                 else:
                     return Response('Credenciales incorrectas', status=401)
+            # Token no existe en la base de datos
             else:
                 return Response("Token inválido", status=401)
+        # No se envian los datos correctos en el metodo POST
         else:
             return Response('Data erronea', status=400)
     else:
@@ -73,30 +78,32 @@ def refrescar_token(request):
 
 @api_view(['GET', 'POST'])
 # VALIDAR_TICKET:
-# Recibe el ticket desde la vista por un metodo post.Luego valida dicho ticket accediendo al CAS del cual recibe los
-# datos y la validez del ticket mismo. Devuelve dichos datos acompañado de un HTTP 200 si el ticket es valido. Si no lo
-# es, devuelve HTTP 401, unauthorized
+# Recibe el ticket desde la vista por metodo POST.Luego valida dicho ticket accediendo al CAS con la funcion auxiliar
+# CONSULTA_CAS  del cual recibe los datos y la validez del ticket mismo.
+# Guarda los datos del ticket y el usuario en la base de datos acompañado de un token y refresh_token creados con
+# funciones de hash yen la base de datos y retornar los datos del token y del usuario acompañado de un código
+# HTTP 200 si el ticket es valido o distintos errores http dependiendo del motivo de la falla.
 def validar_ticket(request):
     if request.method == 'POST':
         # Recepcion de informacion
         view_ticket = request.data.get('ticket')
+        # Si llega la informacion
         if view_ticket is not None:
-            # Validacion del ticket
+            # Validacion del ticket con CAS
             data = consulta_cas(view_ticket)
-            # Si el ticket es valido actualiza la base de datos con la información recibida y retorna los datos junto a
-            # un codigo HTTP 200
+            # Verifica que el ticket esté valido
             if data['valid']:
                 # Genera el token y refresh token con hash256
-                token_hash = hashlib.sha256(
+                token = hashlib.sha256(
                     (view_ticket + str(datetime.timestamp(timezone.now())) + str(randint(0, 1000000))).encode(
-                        'utf-8'))
-                token = token_hash.hexdigest()
-                print("El token generado es", token)
-                refresh_token_hash = hashlib.sha256(
+                        'utf-8')).hexdigest()
+
+                refresh_token = hashlib.sha256(
                     (view_ticket + str(datetime.timestamp(timezone.now())) + str(randint(0, 1000000))).encode(
-                        'utf-8'))
-                refresh_token = refresh_token_hash.hexdigest()
+                        'utf-8')).hexdigest()
+                # Actualiza la base de datos
                 fecha_exp = (timezone.now() + dt.timedelta(minutes=DURACION_TOKEN))
+                # Utiliza el metodo get_or_create de forma que si el usuario ya existe no lo intente crear de nuevo.
                 usuario, created = Usuarios.objects.get_or_create(pers_id=data["info"]['rut'],
                                                                   defaults={"nombres": data['info']['nombres'],
                                                                             "apellidos": data['info']['apellidos'],
@@ -109,6 +116,7 @@ def validar_ticket(request):
 
                 ticket = Tickets(ticket_cas=data['ticket'], usuario=usuario)
                 ticket.save()
+                # Devuelve informacion requerida por la vista (token y datos de usuario)
                 response_data = {
                     "token_data": {"token": token, "refresh_token": refresh_token, "fecha_exp": str(fecha_exp)},
                     "user_data": {"nombres": data['info']['nombres'], "apellidos": data['info']['apellidos']}}
@@ -125,22 +133,44 @@ def validar_ticket(request):
         return Response("Metodo no permitido", status=405)
 
 
+# PUERTAS:
+# Clase dedicada al manejo de las puertas (obterneras y abrirlas). Conta de dos métodos, GET encargado de obtener el
+# listado de puertas al que tiene acceso una persona de acuerdo a su token y POST que se encarga de abrir una
+# determinada puerta.
+# GET:
+# Recibe por metodo GET (en REST framework query_params), si se recibe la data correcta utiliza la funcion auxiliar
+# VERIFICAR_TOKEN para buscarlo en la base de datos.Luego verifica si es valido (no esta expirado y su estado es True)
+# con una funcion de la clase Tokens. Utiliza el pers_id de usuario asociado al token para pedir a SERVICIOS (utilizando
+# la libreria REQUESTS) el listado de puertas asociadas al usuario, lo parsea en una lista de diccionarios y la retorna.
+# POST:
+# Recibe por metodo POST (en REST Framework data) la id de una puerta y el token del usuario, si se recibe la data
+# correcta utiliza la funcion auxiliar VERIFICAR_TOKEN para buscarlo en la base de datos.Luego verifica si es valido
+# (no esta expirado y su estado es True) con una funcion de la clase Tokens. Utiliza el pers_id de usuario asociado
+# al token junto al id de la puerta para pedir a SERVICIOS (utilizando la libreria REQUESTS) la apertura de dicho acceso
+# SERVICIOS responde true si la puerta se abre y FALSE si no y en base a eso se le responde a la vista.
+
 class Puertas(APIView):
+    # obtener listado de puertas
     @staticmethod
     def get(request):
-        # Recibir el ticket desde la vista
+        # Recibir el token desde la vista
         token = request.query_params.get('token')
+        # Si la informacion es correcta
         if token is not None:
+            # Busca el token en la base de datos
             token_bd = verificar_token(token)
+            # Si se encuentra
             if token_bd is not None:
+                # Si el token no esta expirado
                 if token_bd.is_valido():
-                    # Solicitar al servidor las puertas del usuario y retornarlas junto a un codigo HTTP 200
+                    # Solicita a SERVICIOS las puertas del usuario
                     pers_id = Tokens.objects.get(token=token_bd.token).usuario.pers_id
                     params = {"pers_id": pers_id}
                     extraccion = requests.get(url=URL_PUERTAS, params=params,
                                               auth=(USUARIO_SERVICIOS, CLAVE_SERVICIOS),
                                               verify=False)
                     puertas_json = extraccion.json()
+                    # Parsea las puertas en una lista
                     puertas_lista = []
                     for key, value in puertas_json.items():
                         puertas_lista.append(value)
@@ -149,21 +179,26 @@ class Puertas(APIView):
                 # Si el ticket esta expirado retornar HTTP 403 unauthorized
                 else:
                     return Response("Token expirado", status=403)
+            # si el ticket no existe en la base de datos o esta inactivo
             else:
                 return Response("Token invalido", status=401)
         # Si no llega la data pedida error 400 bad request
         else:
             return Response("Error en la data", status=400)
 
+    # Abrir una puerta
     @staticmethod
     def post(request):
         # Recibir informacion
         id_puerta = request.data.get('id')
         token = request.data.get('token')
+        # Si la informacion es correxta
         if token is not None and id_puerta is not None:
-            # Verificar que el token este activo
+            # Verificar que el token en la base de datos
             token_bd = verificar_token(token)
+            # Si esta y es activo
             if token_bd is not None:
+                # Verificar que no este expirado
                 if token_bd.is_valido():
                     # Solicita al servidor abrir la puerta pedida por la vista
                     pers_id = Tokens.objects.get(token=token_bd.token).usuario.pers_id
@@ -180,29 +215,37 @@ class Puertas(APIView):
                     # Si la puerta no se abrio, HTTP 401 unauthorized
                     else:
                         return Response("Acceso denegado", status=401)
-                # Si el ticket no es valido HTTP 401 unauthorized
+                # Si el token esta expirado
                 else:
                     return Response("Token expirado", status=403)
+            # Si el token no esta valido
             else:
                 return Response("Token invalido", status=401)
+        # Si la data recibida no es correcta
         else:
             return Response("Error en la data", status=400)
 
 
+# CERRAR_CESION
+# EndPoint diseñado para cuando el usuario sale de la aplicacion, invalida su token actual
 @api_view(['GET', 'POST'])
-# CERRAR-SESION:
-# Inhabilita el token activo del usuario
 def cerrar_sesion(request):
+    # Recibir informacion
     if request.method == 'POST':
         token = request.data.get('token')
+        # Si la data es correcta
         if token is not None:
+            # Busca el token en la base de datos
             token_bd = verificar_token(token)
+            # Si lo encuentra lo desactiva
             if token_bd is not None:
                 token_bd.estado = False
                 token_bd.save()
                 return Response("Tokens desactivados", status=200)
+            # si el token esta invalido
             else:
                 return Response("Token inválido", status=401)
+        # si la data es incorrecta
         else:
             return Response("Data erronea", status=400)
     else:
