@@ -118,8 +118,8 @@ def validar_ticket(request):
                 ticket.save()
                 # Devuelve informacion requerida por la vista (token y datos de usuario)
                 response_data = {
-                    "token_data": {"token": token, "refresh_token": refresh_token, "fecha_exp": str(fecha_exp)},
-                    "user_data": {"nombres": data['info']['nombres'], "apellidos": data['info']['apellidos']}}
+                    "info_token": {"token": token, "refresh_token": refresh_token, "fecha_exp": str(fecha_exp)},
+                    "info_usuario": {"nombres": data['info']['nombres'], "apellidos": data['info']['apellidos']}}
                 return Response(response_data, status=200)
 
             # Si el ticket no es valido retorna HTTP 401 unathorized
