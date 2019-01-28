@@ -251,9 +251,15 @@ __verificar_token():__
 __REFERENCIAS:__
 Django REST Framework
 https://www.django-rest-framework.org/
+
+
 Django vs Flask: https://www.excella.com/insights/creating-a-restful-api-django-rest-framework-vs-flask
 			https://www.quora.com/Should-I-use-Flask-or-Django-for-Python-backend-which-I-will-expose-as-REST-to-be-consumed-in-Android
+			
+			
 			https://gearheart.io/blog/flask-vs-django-which-is-better-for-your-web-app/
+			
+			
 			https://www.netguru.com/blog/flask-vs-django-comparison-which-python-framework-is-better-for-your-app
 
 
