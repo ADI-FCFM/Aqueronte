@@ -269,15 +269,11 @@ best option for web developing: https://www.quora.com/What-is-the-best-option-fo
 
 restful mobile app: https://savvyapps.com/blog/how-to-build-restful-api-mobile-app	
 
-autenticación: https://www.django-rest-framework.org/api-guide/authentication/ ----> TOKEN AUTHENTICATION, REMOTE USER AUTHENTICATION
-
 token based authentication: https://medium.com/quick-code/token-based-authentication-for-django-rest-framework-44586a9a56fb
 
 get/post django + flutter: https://www.techiediaries.com/flutter-http/ 
 
 djangorest for mobile apps: https://www.sitepoint.com/building-simple-rest-api-mobile-applications/	
-
-Serializers: https://www.django-rest-framework.org/api-guide/serializers/
 
 Request and Responses: https://www.django-rest-framework.org/tutorial/2-requests-and-responses/
 
