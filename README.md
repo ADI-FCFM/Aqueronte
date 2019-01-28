@@ -1,5 +1,9 @@
 DJANGO
+
+
 ¿Por qué usarlo?
+
+
 Es un framework para poder hacer desarrollo web desde una base, sin la necesidad de "reinventar la rueda". Trae todos los esquemas necesarios para poder desarrollar de forma ordenada, rápida y segura. Separa desde el inicio el MVC de forma de "forzar" al desarrollador a regirse por el patrón de diseño, volviendo el código legible y escalable por otra persona.
 DJANGO REST
 Framework especializado de Django para aplicaciones web. Algunas de sus principales ventajas son:
