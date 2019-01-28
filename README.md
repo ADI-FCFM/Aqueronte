@@ -16,59 +16,135 @@ Tiene una app en browser para poder trabajar con el backend aunque no este imple
  
  
 REQUERIMIENTOS
+
+
    Python (2.7, 3.4, 3.5, 3.6, 3.7)
+   
+   
    Django (1.11, 2.0, 2.1)
    
    
 
 CONFIGURACION
+
+
 Inicializar un proyecto en Django
+
+
 Para utilizar REST-FRAMEWORK es necesario agregarlo a las INSTALLED APPS en settings.py junto al nombre de la aplicacion que se está creando.
- 
+
+
 
 Los models se mantienen como se usan en django
 
+
+
 VISTAS:
+
+
 Se pueden hacer de dos formas, como una clase que extiende a APIView, o utilizando el decorator @api_view que permite atrapar algunos errores de parseo.
+
+
 Los metodos request.POST  y request.DATA  pasan a ser request.data y request .query_params respectivamente los cuales parsean ademas de POST, PUT y PATCH en el primero caso. (Ademas que request.POST ya no funciona). En el caso de GET es solo un nombre más adecuado.
 
+
+
 CONEXIÓN CON LAS VISTA:
+
+
 Para conectar con la vista hecha por otra persona, como en flutter por ejemplo, es necesario permitir a la IP que utilizara el backend acceso al mismo, para ello es necesario editar los  ALLOWED HOSTS en settings.py
  
 
+
+
 RECIBIR INFORMACION DE UNA API EXTERNA (cas, servicios, etc)
+
+
 Es necesario utilizar la libreria requests, con la cual dandole la url, los parametros y la autenticación (de ser necesaria) extrae la información de la pagina. Los cuales luego se pueden parsear a un JSON
  
+ 
+ DESCRIPCIÓN DEL PROBLEMA
 
-DESCRIPCIÓN DEL PROBLEMA
-Diseñar el implementar un backend para una aplicación movil encargada de manejar las puertas cuyo sistema de acceso son cajasQL con Inferno(algo). Las vistas de dicha aplicación son implementadas en Flutter por otra persona por lo que el backend tiene que ser lo suficientemente abierto para poder ser utilizado por dicha persona (o cualquiera).
+
+Diseñar el implementar un backend para una aplicación movil encargada de manejar las puertas cuyo sistema de acceso son cajasQL con Inferno. Las vistas de dicha aplicación son implementadas en Flutter por otra persona por lo que el backend tiene que ser lo suficientemente abierto para poder ser utilizado por dicha persona (o cualquiera).
+
+
 El backend tiene que tener la capacidad de validar a un usuario con una api externa (CAS), registrarlo en una base de datos. Al mismo tiempo debe ser capaz de obtener las puertas a las cuales tiene acceso el usuario desde Servicios enviando sus datos y autenticandose en el servidor. Finalmente debe ser capaz de, si la vist se lo pide, abrir una determinada puerta.
 
+
+
 DESCRIPCIÓN DE LA SOLUCIÓN
+
+
 Modelo:
+
+
 Para guardar los datos de forma consistente, se especifican 3 modelos de datos
 
+
 Usuarios(pers_id<string>, nombres<string>, apellidos<string>, fecha_c<dateTime>)
+
+
 -pers_id rut o pasaporte de la persona
+
+
 -fecha_c fecha de creacion del usuario
+
+
+
+
 Token(Token<string> , refresh_token<string>, fecha_exp<dateTime>, estado<Boolean>, fecha_c<dateTime>, fecha_m<dateTime>, usuario<Usuarios>)
+
+
 -Token y refresh token son las credenciales temporales que tiene el usuario
+
+
 -fecha exp es cuando vence el token activo
+
+
 -Estado es el estado en que se encuentra el token
+
+
 -fecha_c y fecha_m son las fechas de creación y modificación del token
+
+
 -Usuario es el usuario al cual se encuentra asociado el token
+
+
+
+
 Tickets(ticket_cas<string>, usuario<Usuarios>, fecha<dateTime>) 
+
+
 -Ticket: validación para el CAS
+
+
 -Usuario : a quien pertenece dicho ticket
+
+
 -fecha: ultima fecha de acceso
+
+
 
 De esta forma se puede mantener un registro del usuario, su acceso y sus tokens.
 
+
+
 ENDPOINTS
+
+
 notas:
+
+
 Activo: Token con estado True
+
+
 No activo: Token con estado False
+
+
 Expirado: Token con estado True pero con fecha de expiración anterior a la actual, debe ser actualizado.
+
+
 Se proponen 4 endpoints con los cuales se comunicara la vista.
 validar_ticket()
 -Recibe por metodo post el ticket del usuario desde la vista, lo valida con el CAS utilizando la libreria requests  (enfrascada en una función auxiliar) y si es un ticket valido genera un token y refresh token con hash256 utilizando la libreria hashlib.  Con los tokens y los datos del usuario, apoyandose en las librerias timezone y datatime para las fechas, provee los datos necesesarios para las tres tablas del modelo.
