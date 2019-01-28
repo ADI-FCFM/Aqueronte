@@ -5,18 +5,21 @@ DJANGO
 
 
 Es un framework para poder hacer desarrollo web desde una base, sin la necesidad de "reinventar la rueda". Trae todos los esquemas necesarios para poder desarrollar de forma ordenada, rápida y segura. Separa desde el inicio el MVC de forma de "forzar" al desarrollador a regirse por el patrón de diseño, volviendo el código legible y escalable por otra persona.
+
+
 DJANGO REST
+
+
 Framework especializado de Django para aplicaciones web. Algunas de sus principales ventajas son:
 Tiene una app en browser para poder trabajar con el backend aunque no este implementada la vista.
  Es flexible con las views, tiene herramientas poderosas como hacerlas en clases pero no deja de perimitir hacerlas basadas en métodos que es lo que se requiere para este backend.
-Extra:
  
-
+ 
 REQUERIMIENTOS
    Python (2.7, 3.4, 3.5, 3.6, 3.7)
    Django (1.11, 2.0, 2.1)
-
- 
+   
+   
 
 CONFIGURACION
 Inicializar un proyecto en Django
