@@ -48,7 +48,7 @@ Los métodos __request.POST__  y __request.DATA__  pasan a ser __request.data__ 
 
 
 
-### CONEXIÓN CON LAS VISTA
+### CONEXIÓN CON LAS VISTAS
 
 
 Para conectar con la vista hecha por otra persona, como en Flutter por ejemplo, es necesario permitir a la IP que utilizará el backend acceso al mismo, para ello es necesario editar los  ALLOWED HOSTS en settings.py
