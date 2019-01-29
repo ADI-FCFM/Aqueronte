@@ -81,7 +81,7 @@ def refrescar_token(request):
 # Recibe el ticket desde la vista por metodo POST.Luego valida dicho ticket accediendo al CAS con la funcion auxiliar
 # CONSULTA_CAS  del cual recibe los datos y la validez del ticket mismo.
 # Guarda los datos del ticket y el usuario en la base de datos acompañado de un token y refresh_token creados con
-# funciones de hash yen la base de datos y retornar los datos del token y del usuario acompañado de un código
+# funciones de hash en la base de datos y retornar los datos del token y del usuario acompañado de un código
 # HTTP 200 si el ticket es valido o distintos errores http dependiendo del motivo de la falla.
 def validar_ticket(request):
     if request.method == 'POST':
@@ -134,7 +134,7 @@ def validar_ticket(request):
 
 
 # PUERTAS:
-# Clase dedicada al manejo de las puertas (obterneras y abrirlas). Conta de dos métodos, GET encargado de obtener el
+# Clase dedicada al manejo de las puertas (obtenerlas y abrirlas). Conta de dos metodos, GET encargado de obtener el
 # listado de puertas al que tiene acceso una persona de acuerdo a su token y POST que se encarga de abrir una
 # determinada puerta.
 # GET:
@@ -229,7 +229,7 @@ class Puertas(APIView):
             return Response("Error en la data", status=400)
 
 
-# CERRAR_CESION
+# CERRAR_SESION
 # EndPoint diseñado para cuando el usuario sale de la aplicacion, invalida su token actual
 @api_view(['GET', 'POST'])
 def cerrar_sesion(request):
