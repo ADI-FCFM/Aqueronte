@@ -259,19 +259,19 @@ __verificar_token():__
 [Django vs Flask 4](https://www.netguru.com/blog/flask-vs-django-comparison-which-python-framework-is-better-for-your-app)
 
 
-[get and post en flask](https://scotch.io/bar-talk/processing-incoming-request-data-in-flask)	
+[Get and post en flask](https://scotch.io/bar-talk/processing-incoming-request-data-in-flask)	
 
-[python vs php](https://hackr.io/blog/python-vs-php-in-2018)
+[Python vs php](https://hackr.io/blog/python-vs-php-in-2018)
 
-[best option for web developing](https://www.quora.com/What-is-the-best-option-for-web-development-PHP-Django-Node-js-Java)
+[Best option for web developing](https://www.quora.com/What-is-the-best-option-for-web-development-PHP-Django-Node-js-Java)
 
-[restful mobile app](https://savvyapps.com/blog/how-to-build-restful-api-mobile-app)
+[Restful mobile app](https://savvyapps.com/blog/how-to-build-restful-api-mobile-app)
 
-[token based authentication](https://medium.com/quick-code/token-based-authentication-for-django-rest-framework-44586a9a56fb)
+[Token based authentication](https://medium.com/quick-code/token-based-authentication-for-django-rest-framework-44586a9a56fb)
 
-[get/post django + flutter](https://www.techiediaries.com/flutter-http/)
+[Get/post django + flutter](https://www.techiediaries.com/flutter-http/)
 
-[djangorest for mobile apps](https://www.sitepoint.com/building-simple-rest-api-mobile-applications/)
+[Djangorest for mobile apps](https://www.sitepoint.com/building-simple-rest-api-mobile-applications/)
 
 [Request and Responses](https://www.django-rest-framework.org/tutorial/2-requests-and-responses/)
 
