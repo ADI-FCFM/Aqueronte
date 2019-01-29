@@ -13,7 +13,7 @@ class Usuarios(models.Model):
     fecha_c = models.DateTimeField(auto_now_add=True)
 
 
-# guarda los datos del token activo
+# Guarda los datos del token activo
 class Tokens(models.Model):
     token = models.CharField(max_length=256)
     refresh_token = models.CharField(max_length=256)
