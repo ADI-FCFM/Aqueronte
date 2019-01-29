@@ -1,4 +1,4 @@
-__DJANGO__
+### DJANGO
 
 
 ¿Por qué usarlo?
@@ -7,7 +7,7 @@ __DJANGO__
 Es un framework para poder hacer desarrollo web desde una base, sin la necesidad de "reinventar la rueda". Trae todos los esquemas necesarios para poder desarrollar de forma ordenada, rápida y segura. Separa desde el inicio el MVC de forma de "forzar" al desarrollador a regirse por el patrón de diseño, volviendo el código legible y escalable por otra persona.
 
 
-__DJANGO REST__
+### DJANGO REST
 
 
 Framework especializado de Django para aplicaciones web. Algunas de sus principales ventajas son:
@@ -15,7 +15,7 @@ Tiene una app en browser para poder trabajar con el backend aunque no este imple
  Es flexible con las views, tiene herramientas poderosas como hacerlas en clases pero no deja de perimitir hacerlas basadas en métodos que es lo que se requiere para este backend.
  
  
-__REQUERIMIENTOS__
+### REQUERIMIENTOS
 
    Python (2.7, 3.4, 3.5, 3.6, __3.7__)
    
@@ -24,7 +24,7 @@ __REQUERIMIENTOS__
    
   En negrita la versión usada. 
 
-__CONFIGURACION__
+### CONFIGURACION
 
 
 Inicializar un proyecto en Django
@@ -38,7 +38,7 @@ Los models se mantienen como se usan en django
 
 
 
-__VISTAS:__
+### VISTAS
 
 
 Se pueden hacer de dos formas, como una clase que extiende a APIView, o utilizando el decorator @api_view que permite atrapar algunos errores de parseo.
@@ -48,7 +48,7 @@ Los métodos __request.POST__  y __request.DATA__  pasan a ser __request.data__ 
 
 
 
-__CONEXIÓN CON LAS VISTA:__
+### CONEXIÓN CON LAS VISTA
 
 
 Para conectar con la vista hecha por otra persona, como en Flutter por ejemplo, es necesario permitir a la IP que utilizará el backend acceso al mismo, para ello es necesario editar los  ALLOWED HOSTS en settings.py
@@ -56,13 +56,13 @@ Para conectar con la vista hecha por otra persona, como en Flutter por ejemplo, 
 
 
 
-__RECIBIR INFORMACIÓN DE UNA API EXTERNA (CAS, servicios, etc)__
+### RECIBIR INFORMACIÓN DE UNA API EXTERNA (CAS, servicios, etc)
 
 
 Es necesario utilizar la libreria requests, con la cual dandole la url, los parametros y la autenticación (de ser necesaria) extrae la información de la página. Los cuales luego se pueden parsear a un JSON
  
  
- __DESCRIPCIÓN DEL PROBLEMA__
+ ### DESCRIPCIÓN DEL PROBLEMA
 
 
 Diseñar el implementar un backend para una aplicación movil encargada de manejar las puertas cuyo sistema de acceso son cajasQL con Inferno. Las vistas de dicha aplicación son implementadas en Flutter por otra persona por lo que el backend tiene que ser lo suficientemente abierto para poder ser utilizado por dicha persona (o cualquiera).
@@ -72,10 +72,10 @@ El backend tiene que tener la capacidad de validar a un usuario con una api exte
 
 
 
-__DESCRIPCIÓN DE LA SOLUCIÓN__
+### DESCRIPCIÓN DE LA SOLUCIÓN
 
 
-__Modelo:__
+## Modelo:
 
 
 Para guardar los datos de forma consistente, se especifican 3 modelos de datos
@@ -129,7 +129,7 @@ De esta forma se puede mantener un registro del usuario, su acceso y sus tokens.
 
 
 
-__ENDPOINTS__
+## ENDPOINTS
 
 
 notas:
@@ -232,7 +232,7 @@ Si la data enviada por la vista no es correcta http 400
 Si la información llega por un método que no es POST 405
 
 
-__FUNCIONES AUXILIARES__
+## FUNCIONES AUXILIARES
 
 
 __consulta_cas()__
@@ -247,7 +247,7 @@ __verificar_token():__
 -Extrae un token de la base de datos y lo retorna. Si no está retorna None
 
 
-__REFERENCIAS:__
+## REFERENCIAS:
 
 
 Django REST Framework
