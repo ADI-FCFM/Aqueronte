@@ -250,36 +250,33 @@ __verificar_token():__
 ## REFERENCIAS:
 
 
-Django REST Framework
-https://www.django-rest-framework.org/
+[Django REST Framework](https://www.django-rest-framework.org/)
 
 
-Django vs Flask: https://www.excella.com/insights/creating-a-restful-api-django-rest-framework-vs-flask
-https://www.quora.com/Should-I-use-Flask-or-Django-for-Python-backend-which-I-will-expose-as-REST-to-be-consumed-in-Android		
-https://gearheart.io/blog/flask-vs-django-which-is-better-for-your-web-app/			
-https://www.netguru.com/blog/flask-vs-django-comparison-which-python-framework-is-better-for-your-app
+[Django vs Flask 1](https://www.excella.com/insights/creating-a-restful-api-django-rest-framework-vs-flask)
+[Django vs Flask 2](https://www.quora.com/Should-I-use-Flask-or-Django-for-Python-backend-which-I-will-expose-as-REST-to-be-consumed-in-Android)	
+[Django vs Flask 3](https://gearheart.io/blog/flask-vs-django-which-is-better-for-your-web-app/)			
+[Django vs Flask 4](https://www.netguru.com/blog/flask-vs-django-comparison-which-python-framework-is-better-for-your-app)
 
 
-get and post in flask: https://scotch.io/bar-talk/processing-incoming-request-data-in-flask	
+[get and post en flask](https://scotch.io/bar-talk/processing-incoming-request-data-in-flask)	
 
-python vs php: https://hackr.io/blog/python-vs-php-in-2018
+[python vs php](https://hackr.io/blog/python-vs-php-in-2018)
 
-best option for web developing: https://www.quora.com/What-is-the-best-option-for-web-development-PHP-Django-Node-js-Java
+[best option for web developing](https://www.quora.com/What-is-the-best-option-for-web-development-PHP-Django-Node-js-Java)
 
-restful mobile app: https://savvyapps.com/blog/how-to-build-restful-api-mobile-app	
+[restful mobile app](https://savvyapps.com/blog/how-to-build-restful-api-mobile-app)
 
-token based authentication: https://medium.com/quick-code/token-based-authentication-for-django-rest-framework-44586a9a56fb
+[token based authentication](https://medium.com/quick-code/token-based-authentication-for-django-rest-framework-44586a9a56fb)
 
-get/post django + flutter: https://www.techiediaries.com/flutter-http/ 
+[get/post django + flutter](https://www.techiediaries.com/flutter-http/)
 
-djangorest for mobile apps: https://www.sitepoint.com/building-simple-rest-api-mobile-applications/	
+[djangorest for mobile apps](https://www.sitepoint.com/building-simple-rest-api-mobile-applications/)
 
-Request and Responses: https://www.django-rest-framework.org/tutorial/2-requests-and-responses/
+[Request and Responses](https://www.django-rest-framework.org/tutorial/2-requests-and-responses/)
 
-extraer Json del CAS= https://www.geeksforgeeks.org/get-post-requests-using-python/
+[Extraer Json del CAS](https://www.geeksforgeeks.org/get-post-requests-using-python/)
 
-Sesión de usuario:
-https://stackoverflow.com/questions/51849550/how-to-keep-user-logged-in-django
+[Sesión de usuario](https://stackoverflow.com/questions/51849550/how-to-keep-user-logged-in-django)
 
-Remote api conection:
-https://ultimatedjango.com/blog/how-to-consume-rest-apis-with-django-python-reques/
+[Remote api conection](https://ultimatedjango.com/blog/how-to-consume-rest-apis-with-django-python-reques/)
