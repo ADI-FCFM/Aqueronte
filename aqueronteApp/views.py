@@ -55,7 +55,7 @@ def refrescar_token(request):
                         # Deshabilitar el token actual
                         token_actual_bdd.estado = False
                         token_actual_bdd.save()
-                        # Crear un nuevo token
+                        # Crear un nuevo  token
                         fecha_exp = (timezone.now() + dt.timedelta(minutes=DURACION_TOKEN))
                         token_actualizado = Tokens(token=nuevo_token, refresh_token=nuevo_refresh_token,
                                                    fecha_exp=fecha_exp,
