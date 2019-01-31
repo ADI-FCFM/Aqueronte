@@ -1,0 +1,127 @@
+{\rtf1\ansi\ansicpg1252\deff0\nouicompat\deflang2058{\fonttbl{\f0\fnil\fcharset0 Calibri;}}
+{\*\generator Riched20 10.0.17134}\viewkind4\uc1 
+\pard\sa200\sl276\slmult1\qc\ul\b\f0\fs44\lang10 Presentaci\'f3n Final Pr\'e1ctica\ulnone\fs28\par
+
+\pard\sa200\sl276\slmult1\qj\ul Introducci\'f3n\ulnone\fs24\par
+Portada:\b0\par
+Hola a todos y todas, hemos llegado casi al final de la pr\'e1ctica y llego el momento de contarles en qu\'e9 consisti\'f3 mi trabajo ac\'e1.\par
+\b Aplicaci\'f3n M\'f3vil ADI\b0 :\par
+C\'f3mo algunos ya saben, nuestro trabajo en conjunto como practicantes con Terry y Kyra fue llevar a cabo la prueba de conceptos de una aplicaci\'f3n de control de accesos a las puertas de la facultad junto con la implementaci\'f3n del esqueleto de la misma.\par
+\b Hades y Aqueronte:\b0\par
+M\'e1s especificamente, el proyecto en el que trabaj\'e9 se divide en 2 subproyectos muy cohesionados entre si. Hades y Aqueronte:\par
+La aplicaci\'f3n Hades es la parte que desarroll\'f3 Kyra y de la la que ella hablar\'e1 (o ya habl\'f3) y Aqueronte corresponde al BackEnd de dicha aplicaci\'f3n y es la parte que desarroll\'e9 yo. Parte de los requerimientos Aqueronte consiste, como pueden ver en la gr\'e1fica, que se comunique por su cuenta con los servicios externos CAS y SERVICIOS, donde se encuentra la mayoria de la informaci\'f3n con la que trabajaremos, como informaci\'f3n sobre usuarios en el caso del CAS y puertas en el caso de Servicios, quien a su vez se comunica directamente con U-Campus.\par
+\b Aqueronte:\par
+\b0 Entonces, recapitulando, las dos acciones importantes que cumple el Backend Aqueronte para la aplicaci\'f3n es manejar a los usuarios con su sesi\'f3n y comunicarse con Servicios. Basicamente, se encarga de proveer de informaci\'f3n a la aplicaci\'f3n.\par
+\b Objetivos:\par
+\b0 Entonces, que objetivos buscamos cumplir con este proyectos. Como pr\'e1cticantes, buscamos\par
+\b 1.\b0  Hacer una prueba de conceptos para ver si la aplicaci\'f3n y la forma en la que est\'e1 dise\'f1ada tiene sentido\par
+\b 2. \b0 Probar nuevas tecnolog\'edas fuera de las manejadas regularmente por ADI que ayuden en este y otros proyectos\par
+\b 3.\b0  Y Finalmente, tener un esqueleto de la aplicaci\'f3n que demuestre el resultado de la prueba de conceptos.\par
+\b Para qu\'e9\par
+\b0\'bfY para quieren ustedes esta aplicaci\'f3n?\par
+\b 1.\b0  Para facilitar los accesos a la universidad\par
+\b 2.\b0  Facilitar el proceso de marcaje de horarios que como habr\'e1n visto, se traduce en colas enormes en ciertos puntos de la facultad\par
+\b 3.\b0  Y finalmente, simplicar la vida de estudiantes, docentes y funcionarios  y no andar que se me perdi\'f3 la tarjeta, que se me qued\'f3 en la casa, que se demoran 10.000 a\'f1os en renovarlas. \par
+\par
+\ul\b\fs28 Investigaci\'f3n\par
+\ulnone\fs24 Como\b0\line Ahora, \'bfc\'f3mo lo hacemos? La primera parte del proyecto consisti\'f3 en investigar que herramienta nos serv\'eda m\'e1s para el desarroll\'f3, por ende, hab\'eda que definir el \par
+\b Stack Tecnol\'f3gico\b0\par
+stack tecnol\'f3gico que se utilizar\'eda\par
+
+\pard\sa200\sl240\slmult1\qj\b 1.\b0  Una opci\'f3n podria ser PHP, que es una de las herramientas que m\'e1s utilizan ustedes. Sin embargo, en terminos de desarroll\'f3 web hay otras opciones tales c\'f3mo\par
+\b 2.\b0  Django, que es un Framework de Python que se describe a si mismo como "Te ayudamos a no reinventar la rueda del desarrollo web" acompa\'f1ado del Framework Django REST que da un buen soporte para la comunicaci\'f3n de la API.\par
+\b 3. \b0 O Flask, tambi\'e9n basado en Python que se define a si mismo como MicroFramework y promete ser m\'e1s liviano y conciso.\par
+\b 4.\b0  Esto deja a PHP fuera de juego rapidamente, ya que una de las ideas era poder ampliar el stack tecnologico del ADI con cosas nuevas.\par
+\b 5. \b0 Entonces la pelea queda entre Django + Django REST y Flask, asi que hay que compararlos m\'e1s detalladamente\par
+\b Simple\b0 . \par
+Segun le\'ed Flask, al ser minimalista, es mucho m\'e1s  facil de usar que Django, pues no tiene algunos comportamientos forzados que Django s\'ed\par
+\b Minimalista.\par
+\b0 Como ya se mencion\'f3, Flask al ser minimalista, viene unicamente con lo m\'e1s b\'e1sico para funcionar, lo cual promete no tener un uso innecesario de memoria o archivos creados que no sirven para nada m\'e1s que confundir. Si uno quisiera agregar funcionalidades m\'e1s avanzadas, es necesario agregarle Plug-Ins. Esto igual es contraproducente pues ni siquiera trae la capa de base de datos instalada, por lo que trae m\'e1s trabajo en ese aspecto.\par
+\b Escalable.\par
+\b0 Diversos foros de internet recomendaron que si se busca implementar una aplicaci\'f3n con un gran n\'famero de usuarios, es mejor utilizar Django\par
+\b BD Relacional:\par
+\b0 Si bien en ambos se puede trabajar con una base de datos relacional, Django la trae por defecto y en Flask hay que agregarla a mano junto con el plug-in.\par
+\b Patron MVC.\par
+\b0 Lo mismo que lo anterior, Django gana porque fuerza el comportamiento en lugar de obligar al usuario a hacerlo por si mismo\par
+\b Facil Versionamiento\par
+\b0 Gracias a Pycharm, versionar un proyecyo en django es apretar un boton.\par
+\b Conocimiento previo.\par
+\b0 Y finalmente, al yo ya saber Django de antes, igualo un poco la curva de aprendizaje de ambos frameworks.\par
+As\'ed que gana Django.\par
+\par
+\ul\b\fs28 Soluci\'f3n\par
+\ulnone\b0\fs24 Ahora que ya tenemos las herramientas, hay que empezar a planear como vamos a solucionar el problema. Se divide el trabajo en 3 partes .\par
+\b Comunicaci\'f3n\par
+\b0 La primera consiste en definir y entender bien como se comunican todas las partes de la arquitectura del sistema y definir los endpoints con los cuales se comunica la aplicaci\'f3n\par
+\b Modelo de datos\par
+\b0\fs22 La segunda en definir un modelo de datos que nos ayude a administrar de forma conveniente la informaci\'f3n\par
+\b\fs24 Vistas\b0  \par
+Y finalmente implementar los endpoints que definimos para que hagan lo que queremos.\par
+\par
+\b Comunicaci\'f3n.\b0\par
+\b 1. \b0 Esta es la arquitectura f\'edsica que teniamos,  pero de ac\'e1, no nos importan todas las interacciones porque nosotros solo somos el Backend. Entonces \par
+\b 2. \b0 Ni lo que pasa entre la vista y el CAS, ni lo que pasa entre SERVICIOS y UCampus es nuestro problema.\par
+\b EndPoints\par
+\b0 Como Spoiler les cuento que vamos a necesitar 4 endpoints, de los cuales 3 son obvios y uno no tanto.\par
+Iniciar Sesi\'f3n\par
+Manejo de Puertas\par
+Refrescar Token\par
+y Cerrar sesi\'f3n\par
+Ya veremos lo que es un Token. Recordemos que por ahora solo queremos saber como se comunican.\par
+\b Iniciar sesi\'f3n.\par
+\b0 Dado que el CAS tiene la informaci\'f3n del usuario, con el nos comunicamos para el tema de la sesi\'f3n.\par
+La app nos va a enviar un ticket, que a nosotros no nos importa de donde sali\'f3. Nosotros enviamos el mismo ticket al CAS.\line La respuesta del CAS puede ser positiva dandonos info del usuario, o negativa si el usuario no existe. Si es positiva, nosotros creamos un TOKEN.\par
+Pero, \'bfqu\'e9 es un Token? Un Token es un String creado con una funci\'f3n de hash que va a ser como la llave del usuario dentro de la aplicaci\'f3n. Si bien el usuario ni se entera de que existe la aplicaci\'f3n tiene que usarlo para pedirle cosas al backend y se vence, da control de seguridad.\par
+Recapitulando, Creamos el token y lo mandamos en conjunto que la fata filtrada, es decir mandamos solo lo que le sirve a la aplicaci\'f3n.\par
+\b Manejo de puertas.\par
+\b0 Que pasa ahora si la aplicaci\'f3n necesita saber a que puertas tiene acceso un usuario. \par
+\b 2. \b0 La app nos va mandar el token que le dimos, nosotros vamos a mandar el identificador del usuario que tenemos asociado a ese token en la base de datos a SERVICIOS, quien nos devuelve la informaci\'f3n de las puertas. Nosotros la filtramos y la mandamos a la app de vuelta para que la muestre.\par
+Que pasa si ahora queremos abrir una puerta. El comportamiento es super similar solo que ahora ademas del token nos pasan el id de la puerta que se quiere abrir, el cual nosotros pasamos junto con la id del usuario a SERVICIOS, quien abre la puerta y nos notifica el acceso\par
+\b Refrescar Token\par
+\b0 Como hablamos antes, los tokens seran nuestra llave con la que nos comunicamos con la aplicaci\'f3n e identificamos al usuario. En orden de darles un poco de seguridad, los tokens que se crean tienen un periodo de duraci\'f3n que no hemos definido cual ser\'e1, la ultima vez que modifique la variable quedo en media hora. Pero cuando se vencen eso no tiene por qu\'e9 afectar al usuario, por lo que la aplicaci\'f3n debe poder reactivar este token sin que el usuario tenga que iniciar sesi\'f3n de nuevo. Para ello, envia el token y el refresh token como segunda capa de seguridad,\par
+Nosotros creamos un nuevo set de token, refresh token y fecha de expiraci\'f3n y se lo devolvemos para que ahora pueda trabajar con eso sin molestar al usuario.\par
+\b Cerrar sesi\'f3n\par
+\b0 Y finalmente, cerrar sesion. Eso recae en la vista, pero no podemos dejar los token dando vuelta por ah\'ed aun utilizables. Entonces debemos desactivarlos y es super simple, la vista envia el token y nosotros lo matamos\par
+\ul\b\fs28 Modelo de Datos\b0\par
+\ulnone\fs24 Ahora que ya definimos la comunicaci\'f3n, habr\'e1n notado que datos van y vienen y tenemos que saber manejarlos bien. Entonces, como vamos a guardar los datos.\par
+Tenemos que pensar en que tenemos, tenemos Usuarios, Tickets y Tokens, que a su vez tienen un monton de cosas. Entonces es bastante directo tener 3 modelos de datos:\par
+Usuarios: Tienen su identificador, nombres, apellidos y la fecha de creacion\par
+Tickets: Que tiene el ticket, una referencia al usuario al que esta asociado y la fecha tambien.\par
+Tokens: Esta el token, el refresh token, la fecha en la que expira y el estado. Adem\'e1s incluimos la fecha de creacion, modificacion y el usuario al que esta asociado.\par
+\par
+Adem\'e1s, debemos notar que con las referencias a usuarios estan todas conectadas entre si.\par
+\par
+\ul\b\fs28 Vistas\par
+\ulnone\b0\fs24 y ahora llegamos finalmente al c\'f3mo, como hicimos todo lo que hicimos.  Como implementamos los endpoints de los que hablamos antes.\par
+Entonces:\par
+\b Iniciar sesi\'f3n\par
+\b0  Esto teniamos.\par
+[SEGUIR LAS FLECHAS]\par
+\ul\fs28\par
+\b FUTURO:\par
+\ulnone\b0\fs24 y listo, lo logramos y funciona. Qu\'e9 viene ahora:\par
+\b Aprendizaje:\par
+\b0 Bueno y que aprend\'ed con todo esto.\par
+A usar mejor Django y Django REST, a saber como comunicarme con APIS externas y no tener todo en mi base de datos y a trabajar en equipo sin estar haciendo exactamente lo mismo. Poder comunicarme con la Kyra para darle lo que ella necesitaba sin saber que hacia ella exactamente.\par
+\b Trabajo Futuro.\par
+Desafios y dificultades\par
+\b0 Lo primero y m\'e1s esperable es todo el manejo de Django + Django Rest de cosas que no conocia, funciones que el framework sobreescribia y yo no sabia, etc.\par
+Lo segundo y diria que lo m\'e1s dificil es el manejo con apis externas y autenticarme sin tener un sistema de autenticaci\'f3n fue algo que me costo mucho entender y que no sabia como buscar en internet. \par
+Y finalmente, modelar los datos de una forma que fuese conveniente y facil de entender y de consultar.\par
+\b Palabras Finales\par
+\ul\b0\fs28\par
+\par
+CAS:\ulnone servicio externo de autenticaci\'f3n de usuario. Central authentication service. En teoria se usara a nivel central\par
+Numero de pags en las diapos\par
+Comunicacion segura: A nivel de prueba de conceptos no es segura, pero si se implementa de verdad va a estar basada en https\par
+Escribir ucampus donde php\par
+requests soporta https?\par
+\par
+\par
+\par
+\ul Trabajo fututo:\par
+\ulnone Como escala django\par
+Como pasa a producci\'f3n django\par
+\fs24\par
+}
+ 
