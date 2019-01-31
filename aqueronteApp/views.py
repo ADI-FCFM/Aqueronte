@@ -36,33 +36,39 @@ def refrescar_token(request):
                 # Extraer el token actual
                 token_bdd = token_actual_bdd.token
                 r_token_bdd = token_actual_bdd.refresh_token
+
                 # Verificar que credenciales esten correctas
                 if token_bdd == token_actual and r_token_bdd == r_token_actual:
                     # obtener al usuario
                     usuario = token_actual_bdd.usuario
                     # Generar nuevo token y refresh token utilizando funcion de hash
-                    old_ticket = Tickets.objects.filter(usuario=usuario)[0].ticket_cas
-                    nuevo_token = hashlib.sha256(
-                        (old_ticket + str(datetime.timestamp(timezone.now())) + str(randint(0, 1000000))).encode(
-                            'utf-8')).hexdigest()
-                    nuevo_refresh_token = hashlib.sha256(
-                        (old_ticket + str(datetime.timestamp(timezone.now())) + str(randint(0, 1000000))).encode(
-                            'utf-8')).hexdigest()
+                    ticket = Tickets.objects.filter(usuario=usuario)[0].ticket_cas
+                    cas_valido= consulta_cas(ticket)['valid']
+                    if cas_valido:
+                        nuevo_token = hashlib.sha256(
+                            (ticket + str(datetime.timestamp(timezone.now())) + str(randint(0, 1000000))).encode(
+                                'utf-8')).hexdigest()
+                        nuevo_refresh_token = hashlib.sha256(
+                            (ticket + str(datetime.timestamp(timezone.now())) + str(randint(0, 1000000))).encode(
+                                'utf-8')).hexdigest()
 
-                    # Deshabilitar el token actual
-                    token_actual_bdd.estado = False
-                    token_actual_bdd.save()
-                    # Crear un nuevo token
-                    fecha_exp = (timezone.now() + dt.timedelta(minutes=DURACION_TOKEN))
-                    token_actualizado = Tokens(token=nuevo_token, refresh_token=nuevo_refresh_token,
-                                               fecha_exp=fecha_exp,
-                                               estado=True, usuario=usuario)
-                    token_actualizado.save()
+                        # Deshabilitar el token actual
+                        token_actual_bdd.estado = False
+                        token_actual_bdd.save()
+                        # Crear un nuevo token
+                        fecha_exp = (timezone.now() + dt.timedelta(minutes=DURACION_TOKEN))
+                        token_actualizado = Tokens(token=nuevo_token, refresh_token=nuevo_refresh_token,
+                                                   fecha_exp=fecha_exp,
+                                                   estado=True, usuario=usuario)
+                        token_actualizado.save()
 
-                    # Responder con la informacion actualizada
-                    data = {"token": nuevo_token, "refresh_token": nuevo_refresh_token, "fecha_exp": fecha_exp}
-                    return Response(data, status=200)
-                # Token o refresh token no coinciden con la base de datos
+                        # Responder con la informacion actualizada
+                        data = {"token": nuevo_token, "refresh_token": nuevo_refresh_token, "fecha_exp": fecha_exp}
+                        return Response(data, status=200)
+                    # Token o refresh token no coinciden con la base de datos
+                    else:
+                        return Response('Cas expirado', status=401)
+
                 else:
                     return Response('Credenciales incorrectas', status=401)
             # Token no existe en la base de datos
